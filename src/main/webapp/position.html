@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>員工</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="public/style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+	
+	<style>
+		button.delete,
+		button.update {
+			margin-right: 5px;
+		}
+
+		div.popup_content button{
+			margin-right: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="header"></div>
+	<main>
+		<div class="row">
+			<div class="col input-group mb-3">
+				<span class="input-group-text">部門</span>
+				<select class="form-select" name="new_dept"></select>
+			</div>
+			<div class=" col input-group mb-3">
+				<span class="input-group-text">職位</span>
+				<input type="text" class="form-control" name="new_position">
+			</div>
+			<div class=" col ">
+				<button class="btn btn-outline-primary" onclick="newPosition()">新增</button>
+			</div>
+		</div>
+
+		<table class="table table-hover" id="table">
+			<thead>
+				<tr>
+					<td></td>
+					<td>部門</td>
+					<td>職位</td>
+					<td></td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody id="position_list"></tbody>
+		</table>
+	</main>
+
+	<div class="popup_bg" id="update_pop" style="display: none">
+		<div class="popup_content">
+			<div class="col input-group mb-3">
+				<span class="input-group-text">部門</span>
+				<select class="form-select" name="update_dept"></select>
+			</div>
+			<div class=" col input-group mb-3">
+				<span class="input-group-text">職位</span>
+				<input type="text" class="form-control" name="update_position">
+			</div>
+			<button class="btn btn-outline-primary float-end" id="update_cancel">取消</button>
+			<button class="btn btn-outline-primary float-end" id="update_confirm">確定修改</button>
+		</div>
+	</div>
+
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src='vendors\tablesort-5.3.0\tablesort.js'></script>
+	<script src="public/util.js"></script>
+	<script>
+
+		var temp_id;
+		$(function () {
+			$("#header").load("header.html");
+			init();
+
+			new Tablesort(document.getElementById('table'));
+		});
+
+		//頁面初始加載資料
+		function init() {
+			//取得部門
+			$.ajax({
+				url: "http://localhost:8080/depts",
+				type: "GET",
+				dataType: "json",
+				success: function (data) {
+					let all_depts = "";
+					for (item in data) {
+						$("#dept").append(`<option value=${data[item]["id"]}>${data[item]["name"]}</option>`);
+						all_depts += `<option value=${data[item]["id"]}>${data[item]["name"]}</option>`;
+					}
+
+					$("select[name='new_dept']").append(all_depts);
+					$("select[name='update_dept']").append(all_depts);
+
+					console.log("All Dept Data:", data);
+				}
+			});
+			//取得職位
+			$.ajax({
+				url: "http://localhost:8080/positions",
+				type: "GET",
+				dataType: "json",
+				success: function (data) {
+					console.log("All Postion Data: ", data);
+
+					for (item in data) {
+						$("#position_list").append(`<tr>
+													<td></td>
+													<td>${data[item]["deptName"]["name"]}</td>
+													<td id="${data[item]["id"]}">${data[item]["name"]}</td>
+													<td>
+														<button class="update btn btn-outline-primary float-end" data-id="${data[item]["id"]}" data-dept="${data[item]["deptId"]}"><i class="fas fa-edit"></i></button>
+														<button class="delete btn btn-outline-primary float-end" data-id="${data[item]["id"]}" data-dept="${data[item]["deptId"]}"><i class="fas fa-trash-alt"></i></button>
+													</td>
+													<td></td>
+												</tr>`);
+					}
+
+				}
+			});
+
+
+			//刪除按鈕
+			$("main").on("click", "button.delete", function () {
+				let that = $(this);
+				swal.fire({
+					title: '確定刪除?',
+					text: "",
+					icon: 'warning',
+					showCancelButton: true,
+					cancelButtonText: '取消',
+					confirmButtonText: '確定'
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$.ajax({
+							url: "http://localhost:8080/position",
+							type: "DELETE",
+							data: {
+								"id": $(this).attr("data-id"),
+								"_csrf": csrf()
+							},
+							dataType: "json",
+							success: function (data) {
+								$(that).parent().parent().remove();
+								Swal.fire({
+									icon: 'success',
+									title: '刪除成功!',
+									text: '',
+									timer: 2000
+								})
+							}
+						});
+					}
+				})
+			});
+
+			//修改按鈕
+			$("main").on("click", "button.update", function () {
+				temp_id = $(this).attr("data-id");
+				let dept_id = $(this).attr("data-dept");
+				let name = $("td#" + temp_id).text();
+				$("select[name='update_dept'] option[value='"+dept_id+"'").prop("selected", true);
+				$("input[name='update_position']").val(name);
+				$("div#update_pop").show();
+			})
+
+			$("#update_cancel").on("click", function () {
+				$("div#update_pop").hide();
+			});
+
+			$(".popup_bg").on("click", function (e) {
+				$("div.popup_bg").hide();
+			});
+
+			$(".popup_content").on("click", function (e) {
+				e.stopPropagation();
+			})
+
+			$("#update_confirm").on("click", function () {
+				let name = $("input[name='update_position']").val();
+				let deptId = $("select[name='update_dept']").val();
+				let deptName = $("select[name='update_dept'] option:selected").text();;
+				if (name.trim() == "") {
+					Swal.fire({
+						icon: 'error',
+						title: '不可空白!',
+						text: '',
+						timer: 2000
+					})
+				} else {
+					$.ajax({
+						url: "http://localhost:8080/position",
+						type: "PUT",
+						data: {
+							"id": temp_id,
+							"name": name,
+							"dept": deptId,
+							"_csrf": csrf()
+						},
+						dataType: "json",
+						success: function (data) {
+							console.log(data);
+							Swal.fire({
+								icon: 'success',
+								title: '更新成功!',
+								text: '',
+								timer: 2000
+							})
+							$("td#" + temp_id).text(name);
+							$("td#" + temp_id).prev().text(deptName);
+							$("div#update_pop").hide();
+						}
+					});
+				}
+
+
+			});
+
+		}
+		//新增按鈕
+		function newPosition() {
+			let position = $("input[name='new_position']").val();
+			let id = $("select[name='new_dept']").val();
+			let dept_name = $("select[name='new_dept'] option[value='" + id + "'").text();
+			if (position.trim() == "") {
+				Swal.fire({
+					icon: 'error',
+					title: '職位不能空白!',
+					text: '',
+					timer: 2000
+				})
+			} else {
+				$.ajax({
+					url: "http://localhost:8080/position",
+					type: "POST",
+					data: {
+						"dept": id,
+						"name": position,
+						"_csrf": csrf()
+					},
+					dataType: "json",
+					success: function (data) {
+
+						console.log("Create Position: ", data);
+						Swal.fire({
+							icon: 'success',
+							title: '新增成功!',
+							text: '',
+							timer: 2000
+						})
+						$("#position_list").prepend(`<tr>
+													<td></td>
+													<td>${dept_name}</td>
+													<td>${data["name"]}</td>
+													<td>
+														<button class="update btn btn-outline-primary float-end" data-id="${data["id"]}">修改</button>
+														<button class="delete btn btn-outline-primary float-end" data-id="${data["id"]}">刪除</button>
+													</td>
+													<td></td>
+												</tr>`);
+					}
+				});
+			}
+		}
+
+	</script>
+</body>
+
+</html>

@@ -1,0 +1,34 @@
+.popup_bg {
+    z-index: 10;
+    background-color: rgba(93, 100, 98, 0.445);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.popup_content {
+    z-index: 11;
+    position: fixed;
+    top: 20%;
+    left: 20%;
+    width: 60%;
+    height: 60%;
+    background-color: white;
+    border-radius: 20px;
+}
+
+.popup_content {
+    padding: 20px;
+    overflow: auto;
+}
+
+
+td {
+    vertical-align: middle;
+}
+
+main {
+    margin: 10px 30px;
+}

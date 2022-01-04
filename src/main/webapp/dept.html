@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>員工</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+	<link rel="stylesheet" href="public/style.css">
+	<style>
+		div.input-group {
+			margin-top: 50px;
+		}
+
+		button.delete,
+		button.update {
+			margin-right: 5px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="header"></div>
+	<main>
+		<div class="input-group mb-3">
+			<span class="input-group-text">部門名稱</span>
+			<input type="text" class="form-control" name="newDept">
+			<button class="btn btn-outline-primary" onclick="newDept()">新增</button>
+		</div>
+		<table class="table table-hover" id="table">
+			<thead>
+				<tr>
+					<td></td>
+					<td>部門</td>
+					<td></td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody id="dept_list"></tbody>
+		</table>
+	</main>
+	<div class="popup_bg" id="update_pop" style="display: none">
+		<div class="popup_content">
+			<div class="input-group mb-3">
+				<span class="input-group-text">部門名稱</span>
+				<input type="text" class="form-control" name="update_deptName">
+			</div>
+			<button class="update btn btn-outline-primary float-end" id="update_cancel">取消</button>
+			<button class="update btn btn-outline-primary float-end" id="update_confirm">確定修改</button>
+		</div>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="public/util.js"></script>
+	<script>
+		var temp_id;
+		$(function () {
+			$("#header").load("header.html");
+			init();
+
+		});
+
+		//頁面初始加載資料
+		function init() {
+
+
+			//取得部門
+			$.ajax({
+				url: "http://localhost:8080/depts",
+				type: "GET",
+				dataType: "json",
+				success: function (data) {
+					console.log("All Dept Data: ", data);
+					for (item in data) {
+						$("#dept_list").append(`<tr>
+													<td></td>
+													<td id="${data[item]["id"]}">${data[item]["name"]}</td>
+													<td>
+														<button class="update btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-edit"></i></button>
+														<button class="delete btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-trash-alt"></i></button>
+													</td>
+													<td></td>
+												</tr>`);
+					}
+				}
+			});
+
+			//修改按鈕
+			$("#update_confirm").on("click", function () {
+				let name = $("input[name='update_deptName']").val();
+
+				if (name.trim() == "") {
+					Swal.fire({
+						icon: 'error',
+						title: '不可空白!',
+						text: '',
+						timer: 2000
+					})
+				} else {
+					$.ajax({
+						url: "http://localhost:8080/dept",
+						type: "PUT",
+						data: {
+							"id": temp_id,
+							"name": name,
+							"_csrf": csrf()
+						},
+						dataType: "json",
+						success: function (data) {
+
+							Swal.fire({
+								icon: 'success',
+								title: '更新成功!',
+								text: '',
+								timer: 2000
+							})
+							$("td#" + temp_id).text(name);
+							$("div#update_pop").hide();
+						}
+					});
+				}
+
+
+			});
+
+			$("main").on("click", "button.update", function () {
+				temp_id = $(this).attr("data-id");
+				let name = $("td#" + temp_id).text();
+				$("input[name='update_deptName']").val($("td#" + temp_id).text());
+				$("div#update_pop").show();
+			})
+
+			$("#update_cancel").on("click", function () {
+				$("div#update_pop").hide();
+			});
+
+			$(".popup_bg").on("click", function (e) {
+				$("div.popup_bg").hide();
+			});
+
+			$(".popup_content").on("click", function (e) {
+				e.stopPropagation();
+			})
+
+
+			//刪除按鈕
+			$("main").on("click", "button.delete", function () {
+				let that = $(this);
+
+				swal.fire({
+					title: '確定刪除?',
+					text: "",
+					icon: 'warning',
+					showCancelButton: true,
+					cancelButtonText: '取消',
+					confirmButtonText: '確定'
+				}).then((result) => {
+					if (result.isConfirmed) {
+						$.ajax({
+							url: "http://localhost:8080/dept",
+							type: "DELETE",
+							data: {
+								"id": $(this).attr("data-id"),
+								"_csrf": csrf()
+							},
+							dataType: "json",
+							success: function (data) {
+								$(that).parent().parent().remove();
+								Swal.fire({
+									icon: 'success',
+									title: '刪除成功!',
+									text: '',
+									timer: 2000
+								})
+							}
+						});
+					}
+				})
+
+
+
+
+			});
+		}
+
+		//新增按鈕
+		function newDept() {
+			let name = $("input[name='newDept']").val();
+			if (name.trim() == "") {
+				Swal.fire({
+					icon: 'error',
+					title: '不可空白!',
+					text: '',
+					timer: 2000
+				})
+			} else {
+				//新增部門
+				$.ajax({
+					url: "http://localhost:8080/dept",
+					type: "POST",
+					data: {
+						"name": name,
+						"_csrf": csrf()
+					},
+					dataType: "json",
+					success: function (data) {
+						console.log("Create Dept: ", data);
+						Swal.fire({
+							icon: 'success',
+							title: '新增成功!',
+							text: '',
+							timer: 2000
+						})
+						$("#dept_list").prepend(`<tr>
+													<td></td>
+													<td id="${data["id"]}">${data["name"]}</td>
+													<td>
+														<button class="update btn btn-outline-primary float-end" data-id="${data["id"]}">修改</button>
+														<button class="delete btn btn-outline-primary float-end" data-id="${data["id"]}">刪除</button>
+													</td>
+													<td></td>
+												</tr>`);
+
+
+					}
+				});
+			}
+		}
+
+
+	</script>
+</body>
+
+</html>

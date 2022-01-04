@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>員工</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+	<link rel="stylesheet" href="public/style.css">
+	<style>
+		button#update_confirm{
+			margin-right: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="header"></div>
+	<main>
+		<table class="table table-hover" id="table">
+			<thead>
+				<tr>
+					<td>部門</td>
+					<td>員工編號</td>
+					<td>姓名</td>
+					<td>勞保級距</td>
+					<td>健保級距</td>
+					<td>勞退級距</td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody id="employee_list"></tbody>
+		</table>
+	</main>
+	<div class="popup_bg" id="update_pop" style="display: none">
+		<div class="popup_content">
+			<div class="row">
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">員工編號</span>
+					<input type="text" class="form-control" name="empNo" disabled>
+				</div>
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">姓名</span>
+					<input type="text" class="form-control" name="name" disabled>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">部門</span>
+					<input type="text" class="form-control" name="dept" disabled>
+				</div>
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">職位</span>
+					<input type="text" class="form-control" name="position" disabled>
+				</div>
+			</div>
+			
+			<div class="row">
+				<div class="col input-group mb-3">
+					<span class="input-group-text">勞保級距</span>
+					<select class="form-select" name="work_insurance"></select>
+				</div>
+				<div class="col input-group mb-3">
+					<span class="input-group-text">健保級距</span>
+					<select class="form-select" name="health_insurance"></select>
+				</div>
+				<div class="col input-group mb-3">
+					<span class="input-group-text">勞退級距</span>
+					<select class="form-select" name="compensation_insurance"></select>
+				</div>
+			</div>
+			
+
+			<button class="btn btn-outline-primary float-end" id="update_cancel">取消</button>
+			<button class="btn btn-outline-primary float-end" id="update_confirm">確定修改</button>
+		</div>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="public/util.js"></script>
+	<script>
+		var employee_list = {};
+		$(function () {
+			$("#header").load("header.html");
+			init();
+
+		});
+
+		//頁面初始加載資料
+		function init() {
+			//取得員工資料
+			$.ajax({
+				url: "http://localhost:8080/employees",
+				type: "GET",
+				async: false,
+				dataType: "json",
+				success: function (data) {
+					console.log("All Employee Data:", data);
+					for (item in data) {
+						let health_insurance = data[item]["healthInsurance"] != null ? data[item]["healthInsurance"] : "未設定";
+						let work_insurance = data[item]["workInsurance"] != null ? data[item]["workInsurance"] : "未設定";
+						let compensation = data[item]["compensation"] != null ? data[item]["compensation"] : "未設定";
+						let html = `<tr>
+										<td>${data[item]["deptName"]["name"]}</td>
+										<td>${data[item]["empNo"]}</td>
+										<td>${data[item]["name"]}</td>
+										<td>${health_insurance.toLocaleString()}</td>
+										<td>${work_insurance.toLocaleString()}</td>
+										<td>${compensation.toLocaleString()}</td>
+										<td>
+											<button class="update btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-edit"></i></button>
+										</td>
+									</tr>`
+						$("#employee_list").append(html);
+
+						employee_list[data[item]["id"]] = data[item];
+					}
+				}
+			});
+
+			//取得保險資訊
+			$.ajax({
+				url: "http://localhost:8080/insurances",
+				type: "GET",
+				dataType: "json",
+				success: function (data) {
+					for (index in data) {
+						switch (data[index]["insuranceType"]) {
+							case "health":
+								$("select[name='health_insurance']").append(`<option value="${data[index]["level"]}">${data[index]["level"].toLocaleString()}</option>`);
+								break;
+							case "work":
+								$("select[name='work_insurance']").append(`<option value="${data[index]["level"]}">${data[index]["level"].toLocaleString()}</option>`);
+								break;
+							case "compensation":
+								$("select[name='compensation_insurance']").append(`<option value="${data[index]["level"]}">${data[index]["level"].toLocaleString()}</option>`);
+								break;
+
+						}
+
+					}
+				}
+			});
+
+			$("#employee_list").on("click", "button.update", function () {
+				let employee = employee_list[$(this).attr("data-id")];
+				console.log("update for:", employee);   
+				$("input[name='name']").val(employee["name"]);
+				$("input[name='empNo']").val(employee["empNo"]);
+				$("input[name='dept']").val(employee["deptName"]["name"]);
+				$("input[name='position']").val(employee["positionName"]["name"]);
+				$("div#update_pop").show();
+			});
+
+			$("#update_cancel").on("click", function () {
+				$("div#update_pop").hide();
+			});
+
+			$(".popup_bg").on("click", function (e) {
+				$("div.popup_bg").hide();
+			});
+
+			$(".popup_content").on("click", function (e) {
+				e.stopPropagation();
+			})
+
+
+		}
+
+
+
+
+	</script>
+</body>
+
+</html>

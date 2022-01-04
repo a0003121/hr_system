@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>首頁</title>
+	<style>
+		#myCanvas {
+			width: 100vw;
+			height: 100vh;
+		}
+
+		#canvas_frame {
+			height: 300px;
+			overflow: hidden;
+			border: 1px solid orange;
+			margin: 10px;
+		}
+	</style>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+</head>
+
+<body>
+	<div id="header"></div>
+
+	<h2>來畫畫!</h2>
+	<div id="canvas_frame">
+		<canvas id="myCanvas"></canvas>
+
+	</div>
+
+	<pre>
+		HR系統架構:
+			- 人事資料庫
+				異動作業
+				離職、新進
+			- 薪水
+				實際工時計薪(計時人員、工讀生、兼職)
+				勞健保、補充保費、所得稅、員工福利金
+				加班加權、換休折算工資
+				假勤、津貼
+				全勤獎金
+				特休結算
+				薪資條(存成excel)
+			- 出勤
+				行事曆
+				排班
+				Excel排班匯入
+				排班津貼彈性設定
+				請假加班
+				假勤明細
+				假別設定
+				特休遞延及結算
+				加班上限時數檢查
+				請假、補卡、銷假
+				每日出勤
+				打卡
+				出勤異常判斷/工時統計
+				簽核
+				職務代理
+				流程
+				簽核通知
+				簽核進度
+			- 績效考核
+				KPI 指標
+				評核關卡
+				考核結合假勤
+				績效統計報表
+			- 教育訓練
+			- 資訊中心
+				通知與公告(發布對象、夾帶檔案、已讀未讀、訊息推播、活動報名)
+				規章手冊
+				通訊錄
+				組織圖
+				公司重要公告及訊息 LINE 推播，員工不漏接。
+				請假、加班、費用申請及各式表單，LINE一鍵申請好輕鬆
+				帳號管理
+				3D座位表
+	</pre>
+
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script>
+		//load header
+		$(function () {
+			$("#header").load("header.html");
+		});
+	</script>
+
+	<script>
+		//draw canvas
+		const canvas = document.getElementById("myCanvas");
+		const ctx = canvas.getContext("2d");
+		let coord = { x: 0, y: 0 };
+
+		document.addEventListener("mousedown", start);
+		document.addEventListener("mouseup", stop);
+		window.addEventListener("resize", resize);
+
+		resize();
+
+		function resize() {
+			ctx.canvas.width = window.innerWidth;
+			ctx.canvas.height = window.innerHeight;
+		}
+		function reposition(event) {
+			coord.x = event.clientX - canvas.offsetLeft;
+			coord.y = event.clientY - canvas.offsetTop;
+		}
+		function start(event) {
+			document.addEventListener("mousemove", draw);
+			reposition(event);
+		}
+		function stop() {
+			document.removeEventListener("mousemove", draw);
+		}
+		function draw(event) {
+			ctx.beginPath();
+			ctx.lineWidth = 5;
+			ctx.lineCap = "round";
+			ctx.strokeStyle = "#0e0f45";
+			ctx.moveTo(coord.x, coord.y);
+			reposition(event);
+			ctx.lineTo(coord.x, coord.y);
+			ctx.stroke();
+		}
+		
+	</script>
+</body>
+
+</html>
