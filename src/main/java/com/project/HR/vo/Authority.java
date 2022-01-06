@@ -2,14 +2,13 @@ package com.project.HR.vo;
 
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,31 +19,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name="position")
+@Table(name="authority")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Position {
+public class Authority {
 	@Id
 	// 主鍵由數據庫自動維護(AUTO_INCREMENT)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name="position_id")
+	@Column(name="id")
 	Integer id;
-	
-	@Column(name = "position_name")
-	String name;
-	
-	@Column(name="dept_id")
-	Integer deptId;
-	
-	@OneToMany(mappedBy = "positionName")
-//	@JsonManagedReference
+	@Column(name = "user_id")
+	Integer userID;
+	String feature;
+
 	@JsonIgnore
-	List<Employee> employeeList;
-	
-	@ManyToOne
-	@JoinColumn(name="dept_id", insertable = false, updatable = false)
-//	@JsonBackReference
-	Dept deptName;
+	@ManyToMany(cascade=CascadeType.ALL, mappedBy="featureList")
+    private List<User> users; 	
 }

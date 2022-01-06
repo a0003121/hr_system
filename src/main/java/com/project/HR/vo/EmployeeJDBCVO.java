@@ -1,6 +1,5 @@
 package com.project.HR.vo;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
