@@ -18,7 +18,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     public void configure(HttpSecurity http) throws Exception {  
         http  
         .authorizeRequests()
-//        .antMatchers("/admin/**").hasAuthority("ADMIN")
+        .antMatchers("/admin/**").hasAuthority("ADMIN")
 //        .antMatchers("/user/**").hasRole("USER")
         .antMatchers( "/public/**").permitAll()  //making the public directory on the classpath root available without authentication
         .anyRequest().authenticated()  
@@ -28,7 +28,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	        .passwordParameter("password")
             .loginPage("/login")  //setting a login page 
             .defaultSuccessUrl("/role", true)
-            //.failureUrl("/login-error")  //setting a login failure page 
+            .failureUrl("/login-error")  //setting a login failure page 
             .permitAll();  //making sure that these are publicly available
         					//This is great for things like images, JavaScript files, and CSS files.
            // .and().csrf().disable() ;

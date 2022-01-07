@@ -25,7 +25,6 @@ public class User {
 	int id;
 	String name;
 	String password;
-	String role;
 	Byte enabled;
 	
 	@ManyToMany(fetch = FetchType.EAGER)
