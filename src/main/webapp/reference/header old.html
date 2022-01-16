@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<style>
+		* {
+			margin: 0;
+			box-sizing: border-box;
+		}
+
+		nav {
+			background-color: rgb(151, 209, 211);
+			display: flex;
+			justify-content: space-between;
+			padding: 3px 10px;
+			height: 50px;
+		}
+
+		#logo_part {
+			display: flex;
+		}
+
+		h1 {
+			color: RGB(38, 41, 76);
+			font-size: 25px;
+			margin-top: 4px;
+		}
+
+		#logo {
+			height: 30px;
+		}
+
+		div#menu_part {
+			display: flex;
+			cursor: pointer;
+			flex-direction: row;
+		}
+
+		div#menu_part li {
+			display: flex;
+			margin: auto 10px;
+			color: #0e0f45;
+			font-weight: bold;
+			position: relative;
+		}
+
+		div#menu_part li a::after {
+			content: '';
+			position: absolute;
+			bottom: -10%;
+			left: 0;
+			width: 100%;
+			height: 0.2em;
+			background-color: rgb(137, 95, 250);
+			opacity: 1;
+			transform: scale(0);
+			transform-origin: center;
+		}
+
+		div#menu_part li a:hover::after {
+			opacity: 1;
+			transform: scale(1);
+			transition: 0.5s;
+		}
+
+		a {
+			color: #0e0f45;
+			text-decoration: none;
+		}
+	</style>
+</head>
+
+<body>
+	<nav>
+		<a href="/role">
+			<div id="logo_part">
+				<img id="logo" src="logo.png" alt="" srcset="">
+				<h1>HR System</h1>
+			</div>
+		</a>
+		<div id="menu_part">
+			<li><a href="/employee.do">員工資料</a></li>
+			<li><a href="/dept.do">部門資料</a></li>
+			<li><a href="/position.do">職位資料</a></li>
+			<li><a href="/insurance.do">保險資料</a></li>
+			<li><a href="/leave.do">請假資料</a></li>
+			<li><a href="/calendar.do">行事曆設定</a></li>
+			<li><a href="/seating.do">座位表</a></li>
+		</div>
+	</nav>
+
+</body>
+
+</html>

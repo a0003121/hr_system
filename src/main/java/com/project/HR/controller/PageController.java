@@ -33,6 +33,6 @@ public class PageController {
          }
      }
 
-     return "user.html";
+     return "user";
   }
 }

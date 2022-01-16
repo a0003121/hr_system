@@ -59,9 +59,9 @@
 			</div>
 			<div class="input-group mb-3">
 				<span class="input-group-text">部門</span>
-				<select class="form-select" name="dept_update"  id="update_dept" ></select>
+				<select class="form-select" name="dept_update" id="update_dept"></select>
 			</div>
-			<div  class="input-group mb-3">
+			<div class="input-group mb-3">
 				<span class="input-group-text">職位</span>
 				<select class="form-select" name="position_update" id="update_position"></select>
 			</div>
@@ -108,6 +108,7 @@
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src='vendors\tablesort-5.3.0\tablesort.js'></script>
+	<script src='vendors\tablesort-5.3.0\sort\tablesort.number.js'></script>
 	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script src="public/util.js"></script>
 	<script>
@@ -147,12 +148,12 @@
 				async: false,
 				dataType: "json",
 				success: function (data) {
-						console.log(data);
+					console.log(data);
 					for (item in data) {
 						$("#dept").append(`<option value=${data[item]["id"]}>${data[item]["name"]}</option>`);
 						$("#update_dept").append(`<option value=${data[item]["id"]}>${data[item]["name"]}</option>`);
-						
-						if(item == 0){
+
+						if (item == 0) {
 							$("#position").html(getPositionByDept(positions, data[item]["id"]));
 						}
 					}
@@ -211,7 +212,7 @@
 				$("#new_pop").hide();
 			});
 
-			$("#dept").on("change", function(){
+			$("#dept").on("change", function () {
 				$("#position").html(getPositionByDept(positions, $(this).val()));
 			})
 
@@ -268,36 +269,24 @@
 					return;
 				}
 
-				let obj = {
-					"name": name,
-					"position": positionId,
-					"empNo": empNo,
-					"dept": deptId,
-					"hireDate": hireDate,
-					"salary": salary,
-					"_csrf": csrf_value
-				}
+
 				$.ajax({
 					url: "http://localhost:8080/employee",
 					type: "POST",
-					data: obj,
+					data: {
+						"name": name,
+						"position": positionId,
+						"empNo": empNo,
+						"dept": deptId,
+						"hireDate": hireDate,
+						"salary": salary,
+						"_csrf": csrf_value
+					},
 					dataType: "json",
 					success: function (data) {
 						if (data["id"] != null) {
-							let money = data["salary"] != null ? data["salary"] : "未設定";
-							let html = `<tr>
-											<td>${empNo}</td>
-											<td>${name}</td>
-											<td>${deptName}</td>
-											<td>${positionName}</td>
-											<td>${hireDate.replaceAll("-", "/")}</td>
-											<td>${money.toLocaleString()}</td>
-											<td>
-												<button class="delete btn btn-outline-primary float-end" data-id="${data["id"]}">刪除</button>
-											<button class="update btn btn-outline-primary float-end" data-id="${data["id"]}">修改</button>
-											</td>
-										</tr>`
-							$("#employee_list").prepend(html);
+							console.log(data);
+							$("#employee_list").prepend(getNewRowHtml(data,deptName, positionName));
 							Swal.fire({
 								icon: 'success',
 								title: '新增成功!',
@@ -319,12 +308,28 @@
 			});
 		}
 
+		function getNewRowHtml(data, deptName, positionName) {
+			let money = data["salary"] != null ? data["salary"] : "未設定";
+			return `<tr>
+						<td>${data["empNo"]}</td>
+						<td>${data["name"]}</td>
+						<td>${deptName}</td>
+						<td>${positionName}</td>
+						<td>${data["hireDate"].replaceAll("-", "/")}</td>
+						<td>${money.toLocaleString()}</td>
+						<td>
+							<button class="delete btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-trash-alt"></i></button>
+							<button class="update btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-edit"></i></button>
+						</td>
+					</tr>`;
+		}
+
 		//修改按鈕相關事件
 		function updateBtn() {
 
 			$("#employee_list").on("click", ".update", function () {
-				
-				
+
+
 				current_id = $(this).attr("data-id");
 				let obj = { "id": current_id };
 
@@ -334,7 +339,7 @@
 					data: obj,
 					dataType: "json",
 					success: function (data) {
-						$("#update_position").html(getPositionByDept(positions,data["dept"] ));
+						$("#update_position").html(getPositionByDept(positions, data["dept"]));
 						$("input[name='update_name']").val(data["name"]);
 						$("input[name='update_id']").val(data["empNo"]);
 						$("input[name='update_hire_date']").val(data["hireDate"]);
@@ -358,8 +363,8 @@
 				e.stopPropagation();
 			})
 
-			$("#update_dept").on("change", function(){
-				$("#update_position").html(getPositionByDept(positions,$(this).val() ));
+			$("#update_dept").on("change", function () {
+				$("#update_position").html(getPositionByDept(positions, $(this).val()));
 			})
 
 			$("#update_confirm").on("click", function () {
@@ -369,22 +374,21 @@
 				let dept = $("select[name='dept_update'] option:selected").val();
 				let position = $("select[name='position_update'] option:selected").val();
 				let salary = $("input[name='update_salary']").val();
-				
-				let obj = {
-					"id": current_id,
-					"empNo": empNo,
-					"position": position,
-					"name": name,
-					"position": position,
-					"dept": dept,
-					"hireDate": hireDate,
-					"_csrf": csrf_value,
-					"salary": salary,
-				}
+
 				$.ajax({
 					url: "http://localhost:8080/employee",
 					type: "PUT",
-					data: obj,
+					data: {
+						"id": current_id,
+						"empNo": empNo,
+						"position": position,
+						"name": name,
+						"position": position,
+						"dept": dept,
+						"hireDate": hireDate,
+						"_csrf": csrf_value,
+						"salary": salary,
+					},
 					dataType: "json",
 					success: function (data) {
 						if (data["id"] != null) {
@@ -397,7 +401,7 @@
 							}).then((result) => {
 								getEmployeeData();
 							})
-							
+
 						} else {
 							Swal.fire({
 								icon: 'error',
@@ -412,17 +416,17 @@
 			});
 		}
 
-		function getPositionByDept(data, deptId){
+		function getPositionByDept(data, deptId) {
 			let html = "";
-			for(item in data){
-				if(data[item]["deptId"] == deptId){
-					html+= `<option value=${data[item]["id"]}>${data[item]["name"]}</option>`;
+			for (item in data) {
+				if (data[item]["deptId"] == deptId) {
+					html += `<option value=${data[item]["id"]}>${data[item]["name"]}</option>`;
 				}
 			}
 			return html;
 		}
 
-		function getEmployeeData(){
+		function getEmployeeData() {
 			//取得所有資料
 			$.ajax({
 				url: "http://localhost:8080/employees",
@@ -433,20 +437,7 @@
 					console.log("All Employee Data:", data);
 					$("#employee_list").html("");
 					for (item in data) {
-						let money = data[item]["salary"] != null ? data[item]["salary"] : "未設定";
-						let html = `<tr>
-										<td>${data[item]["empNo"]}</td>
-										<td>${data[item]["name"]}</td>
-										<td>${data[item]["deptName"]["name"]}</td>
-										<td>${data[item]["positionName"]["name"]}</td>
-										<td>${data[item]["hireDate"].replaceAll("-", "/")}</td>
-										<td>${money.toLocaleString()}</td>
-										<td>
-											<button class="delete btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-trash-alt"></i></button>
-											<button class="update btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-edit"></i></button>
-										</td>
-									</tr>`
-						$("#employee_list").append(html);
+						$("#employee_list").append(getNewRowHtml(data[item], data[item]["deptName"]["name"], data[item]["positionName"]["name"]));
 					}
 				}
 			});

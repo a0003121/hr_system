@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>員工</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+	<link rel="stylesheet" href="public/style.css">
+	<style>
+		#bar {
+			width: 250px;
+			min-width: 250px;
+			background-color: rgb(200, 228, 228);
+			z-index: 9;
+			display: flex;
+			flex-direction: column;
+			padding: 20px;
+		}
+
+		/* div.controller.string div input {
+            pointer-events: none;
+        } */
+		div.main {
+			display: flex;
+			position: relative;
+			height: calc(100vh - 50px);
+		}
+
+		div#bar button {
+			border: 1px solid rgb(51, 51, 51);
+			cursor: pointer;
+			margin-bottom: 10px;
+			padding: 10px;
+		}
+
+		.lil-gui.autoPlace {
+			top: 50px;
+		}
+	</style>
+
+	<style>
+		#loader {
+			display: block;
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			width: 150px;
+			height: 150px;
+			margin: -75px 0 0 -75px;
+			border-radius: 50%;
+			border: 3px solid transparent;
+			border-top-color: #9370DB;
+			-webkit-animation: spin 2s linear infinite;
+			animation: spin 2s linear infinite;
+		}
+
+		#loader:before {
+			content: "";
+			position: absolute;
+			inset: 5px;
+			border-radius: 50%;
+			border: 3px solid transparent;
+			border-top-color: #BA55D3;
+			animation: spin 3s linear infinite;
+		}
+
+		#loader:after {
+			content: "";
+			position: absolute;
+			inset: 15px;
+			border-radius: 50%;
+			border: 3px solid transparent;
+			border-top-color: #FF00FF;
+			animation: spin 1.5s linear infinite;
+		}
+
+		@keyframes spin {
+			0% {
+				transform: rotate(0deg);
+			}
+
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div id="header"></div>
+
+
+	<div class="main">
+
+		<!-- 拖曳視窗 -->
+
+		<div id="bar">
+			<button id="read">讀取</button>
+			<button id="save">儲存</button>
+			<button id="focus">focus back</button>
+			<button class="controlBtn" id="addTable"><i class="fas fa-chair fa-2x"></i></button>
+			<button class="controlBtn" id="addWall"><i class="fas fa-border-all fa-2x"></i></button>
+			<button class="controlBtn" id="control"><i class="far fa-hand-paper fa-2x"></i></button>
+		</div>
+
+		<!-- 面板 -->
+		<div style="position:relative">
+			<div id="loader"></div>
+			<canvas id="c" class="dropzone"></canvas>
+		</div>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="public/util.js"></script>
+	<script>
+		$("#header").load("/backheader");
+
+		$(function () {
+			init();
+		});
+
+		//頁面初始加載資料
+		function init() {
+			$(".controlBtn").on("click", function () {
+				$(".controlBtn").css("background-color", "white");
+				$(this).css("background-color", "gray");
+			});
+		}
+
+
+
+
+	</script>
+
+	<script type="module">
+		import * as THREE from 'https://cdn.skypack.dev/three@0.135.0';
+		import { OrbitControls } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/controls/OrbitControls.js';
+		import { GUI } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/libs/lil-gui.module.min.js';
+		import { TransformControls } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/controls/TransformControls.js';
+
+		import { FontLoader } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/loaders/FontLoader.js';
+		import { TextGeometry } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/geometries/TextGeometry.js';
+
+		import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/loaders/GLTFLoader.js';
+		import { SVGLoader } from 'https://cdn.skypack.dev/three@0.135.0/examples/jsm/loaders/SVGLoader.js';
+
+		const ACTION_SELECT = 1, ACTION_NONE = 0;
+		var ADD_TABLE = false, CONTROL_TABLE = true;
+		var storeFont, icon, icons = {};
+		const mouse = new THREE.Vector2();
+		var loader = new THREE.TextureLoader();
+		const clock = new THREE.Clock();
+		var textLoader = new FontLoader();
+		let scene, camera, renderer, rayCaster, control, mixer, controls, box,
+			mixers = [], floor = [], curveHandles = [],
+			gui = new GUI(),
+			action = ACTION_NONE,
+			adjustHeight = 50,
+			adjustWidth = 250;
+
+		//等loader loading完才開始動畫
+		const loadingManager = new THREE.LoadingManager(() => {
+			$("#loader").fadeOut(1000);
+			animate();
+
+			
+			$("#read").click();
+			$("#control").click();
+		});
+		
+		loader = new THREE.TextureLoader(loadingManager);
+		textLoader = new FontLoader(loadingManager);
+		gui.destroy();
+		//scene
+		const canvas = document.querySelector('#c');
+		renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+		scene = new THREE.Scene();
+		scene.background = new THREE.Color('gray');
+		//
+
+		//camera
+		const fov = 145;
+		const aspect = 2;  // the canvas default
+		const near = 0.1;
+		const far = 2000;
+		camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+		camera.position.set(100, 20, 40);
+		camera.setViewOffset(window.innerWidth - adjustWidth, window.innerHeight - adjustHeight, 0, -100, window.innerWidth - adjustWidth, window.innerHeight - adjustHeight);
+		controls = new OrbitControls(camera, canvas);//control with mouse
+		controls.enableDamping = true; //with controls.update()
+		//
+
+		// light
+		const light = new THREE.DirectionalLight(0xffaa33);
+		light.position.set(- 10, 10, 10);
+		light.intensity = 1.0;
+		scene.add(light);
+
+		const light2 = new THREE.AmbientLight(0x003973);
+		light2.intensity = 1.0;
+		scene.add(light2);
+
+		const light3 = new THREE.DirectionalLight(0xFFFFFF);
+		light3.intensity = 1.0;
+		light3.position.set(20, 10, 30);
+		scene.add(light3);
+		// 
+
+
+		//底圖
+		{
+			const geometry = new THREE.PlaneGeometry(100, 100);
+			geometry.rotateX(- Math.PI / 2);
+			const texture = loader.load('pic/floor.jpg', function (texture) {
+				texture.wrapS = texture.wrapT = THREE.RepeatWrapping,
+					texture.repeat.set(2, 2);
+			});
+			const planeMat = new THREE.MeshPhongMaterial(
+				{
+					map: texture,
+					side: THREE.DoubleSide,
+					transparent: true,
+				});
+			let plane = new THREE.Mesh(geometry, planeMat);
+			scene.add(plane);
+			floor.push(plane);
+		}
+		//
+
+
+
+		//圖示table
+		{
+			box = new GLTFLoader(loadingManager);
+			const url = 'obj/scene.gltf';
+			box.load(url, (gltf) => {
+				const root = gltf.scene;
+				root.scale.multiplyScalar(0.05) // scale here
+				root.position.set(0, 0, 0);
+				root.name = ""
+				root.userData = { type: "table", "save": false };
+				curveHandles.push(root);
+				icons["table"] = root;
+				textLoader.load('Microsoft JhengHei_Bold.json', function (font) {
+					storeFont = font;
+					var geometry = new TextGeometry(root.name, {
+						font: font,
+						size: 10,
+						height: 0.5,
+						curveSegments: 12,
+						bevelEnabled: false,
+						bevelThickness: 0.1,
+						bevelSize: 0.1,
+						bevelSegments: 0.1,
+					});
+					var txt_mat = new THREE.MeshPhongMaterial({ color: 0x141433, });
+					var txt_mesh = new THREE.Mesh(geometry, txt_mat);
+					txt_mesh.position.set(0, 100, 60);
+					txt_mesh.rotation.set(- Math.PI / 2, Math.PI / 2, Math.PI / 2);
+					txt_mesh.userData = "text";
+
+					root.add(txt_mesh);
+				});
+			});
+		}
+		//
+
+
+		// 圖示wall
+		{
+			const boxGeometry = new THREE.BoxGeometry(6, 10, 1);
+			const boxMaterial = new THREE.MeshPhongMaterial({ color: 0xfcf0d1 })
+			const handle = new THREE.Mesh(boxGeometry, boxMaterial);
+			handle.position.copy({ x: 6, y: 5.01, z: - 6 });
+			handle.name = "牆壁";
+			handle.userData = { type: "wall", "save": false };
+			curveHandles.push(handle);
+			icons["wall"] = handle;
+		}
+		//
+
+		//draw the scene & make elememts can interaction with users
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize(window.innerWidth - adjustWidth, window.innerHeight - adjustHeight);
+		renderer.domElement.addEventListener('mousedown', onPointerDown);
+		renderer.domElement.addEventListener('mousemove', onMouseMove);
+		window.addEventListener('resize', onWindowResize);
+
+		rayCaster = new THREE.Raycaster();
+
+		//control.setMode("translate") "translate"  or  "rotate" or "scale"
+
+
+		$("#save").on("click", function () {
+			let result = [];
+			curveHandles.forEach(function (index) {
+				if (index.userData["save"]) {
+					let obj = {};
+					obj["name"] = index.name;
+					obj["position"] = { x: index.position.x, y: index.position.y, z: index.position.z };
+					obj["rotation"] = { x: index.rotation.x, y: index.rotation.y, z: index.rotation.z };
+					obj["type"] = index["userData"]["type"];
+
+					result.push(obj);
+				}
+
+			})
+
+			$.ajax({
+				url: "http://localhost:8080/seat",
+				type: "PUT",
+				data: {
+					"id": 1,
+					"content": JSON.stringify(result),
+					"_csrf": csrf()
+				},
+				dataType: "json",
+				success: function (data) {
+					Swal.fire({
+						icon: 'success',
+						title: '儲存成功!',
+						text: '',
+						timer: 2000
+					})
+				}
+			});
+		})
+
+		$("#read").on("click", function () {
+			//清空
+			curveHandles.forEach(function (index) {
+				if (index.userData["save"]) {
+					scene.remove(index);
+				}
+			})
+			curveHandles = curveHandles.slice(0, 2);
+			floor = floor.slice(0, 1);
+			
+			//讀取
+			$.ajax({
+				url: "http://localhost:8080/seat",
+				type: "GET",
+				data: {
+					"id": 1,
+				},
+				dataType: "json",
+				success: function (data) {
+					let loadData = JSON.parse(data["content"]);
+					for (let i = 0; i < loadData.length; i++) {
+						let obj;
+						if (loadData[i]["type"] == "table") {
+							obj = icons["table"].clone();
+							obj.name = loadData[i]["name"];
+							obj.traverse(child => {
+								if (child.userData == "text") {
+									let geometry = new TextGeometry(obj.name, {
+										font: storeFont,
+										size: 10,
+										height: 0.5,
+										curveSegments: 12,
+										bevelEnabled: false,
+										bevelThickness: 0.1,
+										bevelSize: 0.1,
+										bevelSegments: 0.1,
+									});
+									child.geometry = geometry;
+								};
+							})
+						}
+						if (loadData[i]["type"] == "wall") {
+							obj = icons["wall"].clone();;
+						}
+
+						obj.userData["save"] = true;
+						obj.position.set(loadData[i]["position"]["x"], loadData[i]["position"]["y"], loadData[i]["position"]["z"]);
+						obj.rotation.set(loadData[i]["rotation"]["x"], loadData[i]["rotation"]["y"], loadData[i]["rotation"]["z"]);
+						scene.add(obj);
+						curveHandles.push(obj);
+						floor.push(obj);
+					}
+					console.log();
+				}
+			});
+		})
+
+		$("#focus").on("click", function () {
+			controls.target.set(0, 0, 0);
+		})
+
+		$("#addTable").on("click", function () {
+			CONTROL_TABLE = false;
+			ADD_TABLE = true;
+			scene.remove(icon);
+			icon = icons["table"];
+			scene.add(icon);
+			let target = icon;
+			gui.destroy();
+			gui = new GUI();
+			let objectControl = {
+				rotate: () => {
+					target.rotation.y = target.rotation.y + Math.PI / 2;
+				}
+			}
+			let rotationFolder = gui.addFolder('Rotation');
+			//rotationFolder.add(target.rotation, 'x', 0, Math.PI * 2).listen();
+			rotationFolder.add(objectControl, 'rotate');
+		});
+
+		$("#addWall").on("click", function () {
+			CONTROL_TABLE = false;
+			ADD_TABLE = true;
+			scene.remove(icon);
+			icon = icons["wall"];
+			scene.add(icon);
+			let target = icon;
+			gui.destroy();
+			gui = new GUI();
+			let objectControl = {
+				rotate: () => {
+					target.rotation.y = target.rotation.y + Math.PI / 2;
+				}
+			}
+			let rotationFolder = gui.addFolder('Rotation');
+			//rotationFolder.add(target.rotation, 'x', 0, Math.PI * 2).listen();
+			rotationFolder.add(objectControl, 'rotate');
+		})
+
+		$("#control").on("click", function () {
+			scene.remove(icon);
+			CONTROL_TABLE = true;
+			ADD_TABLE = false;
+			gui.destroy();
+		})
+
+
+
+		function onMouseMove(event) {
+			let offsetY = adjustHeight - window.scrollY;
+			mouse.x = ((event.clientX - adjustWidth) / (window.innerWidth - adjustWidth)) * 2 - 1;
+			mouse.y = - ((event.clientY - offsetY + 25) / (window.innerHeight - adjustHeight)) * 2 + 1;
+
+			rayCaster.setFromCamera(mouse, camera);
+			const intersects = rayCaster.intersectObjects(floor, true);
+
+			if (ADD_TABLE && intersects.length > 0) {
+				const intersect = intersects[0];
+				icon.position.copy(intersects[0].point).add(intersects[0].face.normal);
+				if (icon == icons["table"]) {
+					icon.position.divideScalar(5).floor().multiplyScalar(5).addScalar(0.65);
+				} else {
+					icon.position.divideScalar(5).floor().multiplyScalar(5).addScalar(5);
+				}
+			} else {
+				// icon.visible = false;
+			}
+
+		}
+
+		//mouse event
+		function onPointerDown(event) {
+			action = ACTION_SELECT;
+		}
+
+		function onWindowResize() {
+			camera.aspect = (window.innerWidth - adjustWidth) / (window.innerHeight - adjustHeight);
+			camera.updateProjectionMatrix();
+			renderer.setSize(window.innerWidth - adjustWidth, window.innerHeight - adjustHeight);
+		}
+
+		//animate & interaction
+		function animate() {
+			requestAnimationFrame(animate);
+			rayCaster.setFromCamera(mouse, camera);
+			const intersects = rayCaster.intersectObjects(curveHandles, true);
+			if (intersects.length) { // get the clicked object
+				let target = intersects[0].object;
+				while (target.parent != null && target.parent != scene) {
+					target = target.parent;
+				}
+				if (action === ACTION_SELECT) {
+					action = ACTION_NONE;
+					
+					if (ADD_TABLE) {
+						let obj = icon.clone();
+						obj.position.copy(icon.position);
+						obj.userData["save"] = true;
+						scene.add(obj);
+						curveHandles.push(obj);
+						floor.push(obj);
+					}
+
+
+					if (CONTROL_TABLE && target != icons["table"] && target != icons["wall"]) {
+						let objectControl = {
+							delete: () => {
+								scene.remove(scene.getObjectById(target.id));
+								curveHandles = curveHandles.filter(function (item) {
+									return item.id !== target.id;
+								})
+								gui.destroy();
+								renderer.render(scene, camera);
+							},
+							//以某個物體為中心旋轉鏡頭
+							focus: () => {
+								// runn(target.position);
+								camera.position.set(target.position.x + 35, target.position.y + 35, target.position.z + 35);
+								controls.target.set(target.position.x, target.position.y, target.position.z);
+							},
+							rotate: () => {
+								target.rotation.y = target.rotation.y + Math.PI / 2;
+							}
+
+						}
+						//create GUI panel
+						gui.destroy();
+						gui = new GUI();
+						let name = gui.add(target, "name");
+						name.onChange(function (value) {
+							target.traverse(child => {
+								if (child.userData == "text") {
+									let geometry = new TextGeometry(value, {
+										font: storeFont,
+										size: 10,
+										height: 0.5,
+										curveSegments: 12,
+										bevelEnabled: false,
+										bevelThickness: 0.1,
+										bevelSize: 0.1,
+										bevelSegments: 0.1,
+									});
+									child.geometry = geometry;
+								};
+							})
+						});
+						let id = gui.add(target, "id");
+						let positionFolder = gui.addFolder('Position');
+						let positionX = positionFolder.add(target.position, 'x', -46, 46).step(5).listen();
+						positionX.onChange(function (value) {
+							target.position.x++;
+						});
+						let positionZ = positionFolder.add(target.position, 'z', -46, 46).step(5).listen();
+						positionZ.onChange(function (value) {
+							target.position.z++;
+						});
+						let rotationFolder = gui.addFolder('Rotation');
+						rotationFolder.add(objectControl, 'rotate');
+
+						gui.add(objectControl, 'focus');
+						gui.add(objectControl, 'delete');
+					}
+					
+				}
+			}
+
+			//with controls.enableDamping()
+			controls.update();
+
+			//animate
+			var delta = clock.getDelta();
+			//if (mixer) mixer.update(delta);
+			for (let i = 0; i < mixers.length; ++i) {
+				mixers[i].update(delta);
+			}
+
+			if (camera.fov > 45) {
+				camera.fov = camera.fov - 2;
+				camera.updateProjectionMatrix();
+			}
+			//refresh the scene
+			renderer.render(scene, camera);
+
+
+
+		}
+
+
+	</script>
+</body>
+
+</html>

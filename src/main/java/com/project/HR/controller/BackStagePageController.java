@@ -40,4 +40,14 @@ public class BackStagePageController {
 		return "/admin/insurance";
 	}
 	
+	@GetMapping("/seating.do")
+	public String gotoSeatingPage() {
+		return "/admin/seating";
+	}
+	
+	@GetMapping("/calendar.do")
+	public String gotoCalendarPage() {
+		return "/admin/calendar";
+	}
+	
 }
