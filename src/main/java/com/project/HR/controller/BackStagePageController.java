@@ -40,6 +40,11 @@ public class BackStagePageController {
 		return "/admin/insurance";
 	}
 	
+	@GetMapping("/leave.do")
+	public String gotoLeavePage() {
+		return "/admin/employee_leave";
+	}
+	
 	@GetMapping("/seating.do")
 	public String gotoSeatingPage() {
 		return "/admin/seating";
