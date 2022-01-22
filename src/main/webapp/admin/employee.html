@@ -25,7 +25,26 @@
 
 	<h2 style="text-align: center;padding-top: 10px;">所有員工</h2>
 	<main>
-		<button id="new_btn" class="btn btn-outline-primary float-end">新增員工</button>
+		<div class="row">
+			<div class="col">
+				<select class="form-control" id="filter_dept">
+					<option value="0">篩選部門</option>
+				</select>
+			</div>
+			<div class="col">
+				<select class="form-control" id="filter_status">
+					<option value="0">篩選狀態</option>
+					<option value="1">未入職</option>
+					<option value="2">在職</option>
+					<option value="3">離職</option>
+				</select>
+			</div>
+			<div class="col">
+				<input id="search_idName" class="form-control" type="text" placeholder="搜尋編號/姓名">
+			</div>
+			<button id="new_btn" class="col btn btn-outline-primary">新增員工</button>
+
+		</div>
 		<table class="table table-hover " id="table">
 			<thead>
 				<tr>
@@ -34,7 +53,8 @@
 					<th>部門</th>
 					<th>職位</th>
 					<th>到職日</th>
-					<th>薪資</th>
+					<th>離職日</th>
+					<th>狀態</th>
 					<td></td>
 				</tr>
 			</thead>
@@ -45,26 +65,44 @@
 
 	<div class="popup_bg" id="update_pop" style="display: none">
 		<div class="popup_content">
-			<div class="input-group mb-3">
-				<span class="input-group-text">員工編號</span>
-				<input type="text" class="form-control" name="update_id">
+			<div class="row">
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">員工編號</span>
+					<input type="text" class="form-control" name="update_id">
+				</div>
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">姓名</span>
+					<input type="text" class="form-control" name="update_name">
+				</div>
 			</div>
+
 			<div class="input-group mb-3">
-				<span class="input-group-text">姓名</span>
-				<input type="text" class="form-control" name="update_name">
+				<span class="input-group-text">狀態</span>
+				<select class="form-select" name="update_status" id="update_status">
+					<option value="1">未入職</option>
+					<option value="2">在職</option>
+					<option value="3">離職</option>
+				</select>
 			</div>
 			<div class="input-group mb-3">
 				<span class="input-group-text">到職日</span>
 				<input type="date" class="form-control" name="update_hire_date">
 			</div>
 			<div class="input-group mb-3">
-				<span class="input-group-text">部門</span>
-				<select class="form-select" name="dept_update" id="update_dept"></select>
+				<span class="input-group-text">離職日</span>
+				<input type="date" class="form-control" name="update_leave_date">
 			</div>
-			<div class="input-group mb-3">
-				<span class="input-group-text">職位</span>
-				<select class="form-select" name="position_update" id="update_position"></select>
+			<div class="row">
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">部門</span>
+					<select class="form-select" name="dept_update" id="update_dept"></select>
+				</div>
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">職位</span>
+					<select class="form-select" name="position_update" id="update_position"></select>
+				</div>
 			</div>
+
 			<div class="input-group mb-3">
 				<span class="input-group-text">薪資</span>
 				<input type="text" class="form-control" name="update_salary">
@@ -77,24 +115,40 @@
 	<div class="popup_bg" id="new_pop" style="display: none">
 		<div class="popup_content">
 			<div class="input-group mb-3">
-				<span class="input-group-text">員工編號</span>
-				<input type="text" class="form-control" name="empNo">
+				<span class="input-group-text">狀態</span>
+				<select class="form-select" name="status" id="status">
+					<option value="1">未入職</option>
+					<option value="2">在職</option>
+					<option value="3">離職</option>
+				</select>
 			</div>
-			<div class="input-group mb-3">
-				<span class="input-group-text">姓名</span>
-				<input type="text" class="form-control" name="name">
+			<div class="row">
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">員工編號</span>
+					<input type="text" class="form-control" name="empNo">
+				</div>
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">姓名</span>
+					<input type="text" class="form-control" name="name">
+				</div>
 			</div>
 			<div class="input-group mb-3">
 				<span class="input-group-text">到職日</span>
 				<input type="date" class="form-control" name="hire_date" id="date">
 			</div>
 			<div class="input-group mb-3">
-				<span class="input-group-text">部門</span>
-				<select class="form-select" name="dept" id="dept"></select>
+				<span class="input-group-text">離職日</span>
+				<input type="date" class="form-control" name="leave_date">
 			</div>
-			<div class="input-group mb-3">
-				<span class="input-group-text">職位</span>
-				<select class="form-select" name="position" id="position"></select>
+			<div class="row">
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">部門</span>
+					<select class="form-select" name="dept" id="dept"></select>
+				</div>
+				<div class="input-group mb-3 col">
+					<span class="input-group-text">職位</span>
+					<select class="form-select" name="position" id="position"></select>
+				</div>
 			</div>
 			<div class="input-group mb-3">
 				<span class="input-group-text">薪資</span>
@@ -107,11 +161,12 @@
 	</div>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-	<script src='vendors\tablesort-5.3.0\tablesort.js'></script>
-	<script src='vendors\tablesort-5.3.0\sort\tablesort.number.js'></script>
+	<script src='vendors/tablesort-5.3.0/tablesort.js'></script>
+	<script src='vendors/tablesort-5.3.0/sorts/tablesort.number.js'></script>
 	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script src="public/util.js"></script>
 	<script>
+		var deptList = {};
 		var current_id = 0;
 		var positions;
 		let csrf_value = csrf();
@@ -124,6 +179,40 @@
 
 			//https://tristen.ca/tablesort/demo/
 			new Tablesort(document.getElementById('table'));
+
+			//篩選
+			$("#filter_dept, #filter_status, #search_idName").on("change", function () {
+				$("tr.search_name").show();
+
+				//部門篩選
+				let dept_match = $("#filter_dept").val();
+				if (dept_match != 0) {
+					$("td.filter_dept").each(function (index) {
+						if ($(this).attr("data-dept") != dept_match) {
+							$(this).parent().hide();
+						} 
+					})
+				}
+				//狀態篩選
+				let status_match = $("#filter_status").val();
+				if (status_match != 0) {
+					$("td.filter_status").each(function (index) {
+						if ($(this).attr("data-status") != status_match) {
+							$(this).parent().hide();
+						} 
+					})
+				}
+				//姓名員編篩選
+				let name_match = $("#search_idName").val();
+				if(name_match.trim() != 0) {
+					$("tr.search_name").each(function (index) {
+						if(!$(this).attr("data-search").includes(name_match)){
+							$(this).hide();
+						}
+					})
+
+				}
+			})
 		});
 
 		//頁面初始加載資料
@@ -148,7 +237,6 @@
 				async: false,
 				dataType: "json",
 				success: function (data) {
-					console.log(data);
 					for (item in data) {
 						$("#dept").append(`<option value=${data[item]["id"]}>${data[item]["name"]}</option>`);
 						$("#update_dept").append(`<option value=${data[item]["id"]}>${data[item]["name"]}</option>`);
@@ -220,9 +308,11 @@
 				let name = $("input[name='name']").val();
 				let empNo = $("input[name='empNo']").val();
 				let hireDate = $("input[name='hire_date']").val();
+				let leaveDate = $("input[name='leave_date']").val();
 				let positionId = $("select[name='position'] option:selected").val();
 				let positionName = $("select[name='position'] option:selected").text();
 				let deptId = $("select[name='dept'] option:selected").val();
+				let status = $("select[name='status'] option:selected").val();
 				let deptName = $("select[name='dept'] option:selected").text();
 				let salary = $("input[name='salary']").val();
 				let error = false;
@@ -279,6 +369,8 @@
 						"empNo": empNo,
 						"dept": deptId,
 						"hireDate": hireDate,
+						"leaveDate": leaveDate,
+						"status": status,
 						"salary": salary,
 						"_csrf": csrf_value
 					},
@@ -286,7 +378,7 @@
 					success: function (data) {
 						if (data["id"] != null) {
 							console.log(data);
-							$("#employee_list").prepend(getNewRowHtml(data,deptName, positionName));
+							$("#employee_list").prepend(getNewRowHtml(data, deptName, positionName));
 							Swal.fire({
 								icon: 'success',
 								title: '新增成功!',
@@ -309,14 +401,28 @@
 		}
 
 		function getNewRowHtml(data, deptName, positionName) {
-			let money = data["salary"] != null ? data["salary"] : "未設定";
-			return `<tr>
+			let status = "";
+			switch (data["status"]) {
+				case 1:
+					status = "未入職";
+					break;
+				case 2:
+					status = "在職";
+					break;
+				case 3:
+					status = "離職";
+					break;
+			}
+			return `<tr class="search_name" data-search="${data["empNo"]}${data["name"]}">
 						<td>${data["empNo"]}</td>
 						<td>${data["name"]}</td>
-						<td>${deptName}</td>
+						<td class="filter_dept" data-dept="${data["dept"]}">${deptName}</td>
 						<td>${positionName}</td>
 						<td>${data["hireDate"].replaceAll("-", "/")}</td>
-						<td>${money.toLocaleString()}</td>
+						<td>${data["leaveDate"] != null ? data["leaveDate"].replaceAll("-", "/") : ""}</td>
+						<td class="filter_status" data-status="${data["status"]}">${status}</td>
+						<td></td>
+						<td></td>
 						<td>
 							<button class="delete btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-trash-alt"></i></button>
 							<button class="update btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-edit"></i></button>
@@ -329,25 +435,24 @@
 
 			$("#employee_list").on("click", ".update", function () {
 
-
 				current_id = $(this).attr("data-id");
-				let obj = { "id": current_id };
 
 				$.ajax({
 					url: "http://localhost:8080/employee",
 					type: "GET",
-					data: obj,
-					dataType: "json",
-					success: function (data) {
-						$("#update_position").html(getPositionByDept(positions, data["dept"]));
-						$("input[name='update_name']").val(data["name"]);
-						$("input[name='update_id']").val(data["empNo"]);
-						$("input[name='update_hire_date']").val(data["hireDate"]);
-						$("input[name='update_salary']").val(data["salary"]);
-						$("select[name='dept_update'] option[value='" + data["dept"] + "']").attr("selected", true);
-						$("select[name='position_update'] option[value='" + data["position"] + "']").attr("selected", true);
-						$("div#update_pop").show();
-					}
+					data: { "id": current_id },
+					dataType: "json"
+				}).done(function (data) {
+					$("select option").attr("selected", false);
+					$("#update_position").html(getPositionByDept(positions, data["dept"]));
+					$("input[name='update_name']").val(data["name"]);
+					$("input[name='update_id']").val(data["empNo"]);
+					$("input[name='update_hire_date']").val(data["hireDate"]);
+					$("input[name='update_salary']").val(data["salary"]);
+					$("select[name='dept_update'] option[value='" + data["dept"] + "']").attr("selected", true);
+					$("select[name='position_update'] option[value='" + data["position"] + "']").attr("selected", true);
+					$("#update_status option[value='" + data["status"] + "']").attr("selected", true);
+					$("div#update_pop").show();
 				});
 			});
 
@@ -371,8 +476,10 @@
 				let name = $("input[name='update_name']").val();
 				let empNo = $("input[name='update_id']").val();
 				let hireDate = $("input[name='update_hire_date']").val();
+				let leaveDate = $("input[name='update_leave_date']").val();
 				let dept = $("select[name='dept_update'] option:selected").val();
 				let position = $("select[name='position_update'] option:selected").val();
+				let status = $("select[name='update_status'] option:selected").val();
 				let salary = $("input[name='update_salary']").val();
 
 				$.ajax({
@@ -386,31 +493,42 @@
 						"position": position,
 						"dept": dept,
 						"hireDate": hireDate,
+						"leaveDateN": leaveDate,
+						"status": status,
 						"_csrf": csrf_value,
-						"salary": salary,
+						"salaryN": salary,
 					},
 					dataType: "json",
-					success: function (data) {
-						if (data["id"] != null) {
-							$("div#update_pop").hide();
-							Swal.fire({
-								icon: 'success',
-								title: '更新成功!',
-								text: '',
-								timer: 2000
-							}).then((result) => {
-								getEmployeeData();
-							})
+				}).done(function (data) {
+					if (data["id"] != null) {
+						$("div#update_pop").hide();
+						Swal.fire({
+							icon: 'success',
+							title: '更新成功!',
+							text: '',
+							timer: 2000
+						}).then((result) => {
+							getEmployeeData();
+						})
 
-						} else {
-							Swal.fire({
-								icon: 'error',
-								title: '員工編號重複，更新失敗!',
-								text: '',
-								timer: 2000
-							})
-						}
+					} else {
+						Swal.fire({
+							icon: 'error',
+							title: '員工編號重複，更新失敗!',
+							text: '',
+							timer: 2000
+						})
 					}
+				}).fail(function (err, text, error) {
+					console.log(err);
+					console.log(text);
+					console.log(error);
+					Swal.fire({
+						icon: 'error',
+						title: '修改失敗!',
+						text: '',
+						timer: 2000
+					})
 				});
 
 			});
@@ -427,6 +545,7 @@
 		}
 
 		function getEmployeeData() {
+			deptList = {};
 			//取得所有資料
 			$.ajax({
 				url: "http://localhost:8080/employees",
@@ -437,10 +556,15 @@
 					console.log("All Employee Data:", data);
 					$("#employee_list").html("");
 					for (item in data) {
+						deptList[data[item]["dept"]] = data[item]["deptName"]["name"];
 						$("#employee_list").append(getNewRowHtml(data[item], data[item]["deptName"]["name"], data[item]["positionName"]["name"]));
 					}
 				}
 			});
+			for (index in deptList) {
+				$("#filter_dept").append(`<option value="${index}">${deptList[index]}</option`);
+			}
+
 		}
 	</script>
 </body>

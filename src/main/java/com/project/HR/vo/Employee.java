@@ -43,12 +43,15 @@ public class Employee {
 	Integer empNo;
 	@Column(name="hire_date")
 	Date hireDate;
+	@Column(name="leave_date")
+	Date leaveDate;
 	Integer salary;
 	@Column(name="health_insurance")
 	Integer healthInsurance;
 	@Column(name="work_insurance")
 	Integer workInsurance;
 	Integer compensation;
+	Integer status;
 	
 	@ManyToOne
 	@JoinColumn(name="position", insertable = false, updatable = false)

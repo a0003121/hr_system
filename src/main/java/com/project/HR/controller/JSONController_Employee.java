@@ -1,5 +1,8 @@
 package com.project.HR.controller;
 
+import java.sql.Date;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.project.HR.dao.EmployeeDAO;
 import com.project.HR.vo.Employee;
-import com.project.HR.vo.EmployeeForm;
 
 @RestController
 public class JSONController_Employee {
@@ -31,24 +33,18 @@ public class JSONController_Employee {
 	}
 
 	@PostMapping("/employee")
-	public Employee createEmployee(EmployeeForm employeeData) {
-		Employee employee = Employee.builder()
-									.id(employeeData.getId())
-									.empNo(employeeData.getEmpNo())
-									.name(employeeData.getName())
-									.position(employeeData.getPosition())
-									.dept(employeeData.getDept())
-									.hireDate(employeeData.getHireDate())
-									.build();
-		
-		if ("".equals(employeeData.getSalary())) 
-			employee.setSalary(null);
-		else 
-			employee.setSalary(Integer.parseInt(employeeData.getSalary()));
+	public Employee createEmployee(Employee employeeData, String leaveDateN, String salaryN) throws ParseException {
+		if(!"".equals(salaryN.trim())) {
+			employeeData.setSalary(Integer.parseInt(salaryN));
+		}
+		if(!"".equals(leaveDateN.trim())) {
+			java.util.Date date =new SimpleDateFormat("yyyy-MM-dd").parse(leaveDateN);
+			employeeData.setLeaveDate(new Date(date.getTime()));
+		}
 		
 		Employee temp = null;
 		try {
-			temp = employeeDAO.save(employee);
+			temp = employeeDAO.save(employeeData);
 		} catch (DataIntegrityViolationException e) {
 			return new Employee();
 		}
@@ -57,20 +53,18 @@ public class JSONController_Employee {
 	}
 
 	@PutMapping("/employee")
-	public Employee updateEmployee(EmployeeForm employeeData) {
-		Employee employee = Employee.builder()
-									.id(employeeData.getId())
-									.empNo(employeeData.getEmpNo())
-									.name(employeeData.getName())
-									.position(employeeData.getPosition())
-									.dept(employeeData.getDept())
-									.hireDate(employeeData.getHireDate())
-									.salary(Integer.parseInt(employeeData.getSalary()))
-									.build();
-		
+	public Employee updateEmployee(Employee employeeData, String leaveDateN, String salaryN) throws ParseException {
 		Employee result = null;
+		
+		if(!"".equals(salaryN.trim())) {
+			employeeData.setSalary(Integer.parseInt(salaryN));
+		}
+		if(!"".equals(leaveDateN.trim())) {
+			java.util.Date date =new SimpleDateFormat("yyyy-MM-dd").parse(leaveDateN);
+			employeeData.setLeaveDate(new Date(date.getTime()));
+		}
 		try {
-			result = employeeDAO.save(employee);
+			result = employeeDAO.save(employeeData);
 		} catch (DataIntegrityViolationException e) {
 			return new Employee();
 		}
