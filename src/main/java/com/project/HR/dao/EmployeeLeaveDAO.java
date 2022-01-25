@@ -4,6 +4,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.project.HR.vo.EmployeeLeave;
 
-public interface EmployeeLeaveDAO extends JpaRepository<EmployeeLeave, Integer> {
+import java.util.List;
 
+public interface EmployeeLeaveDAO extends JpaRepository<EmployeeLeave, Integer> {
+    List<EmployeeLeave> findByEmployeeId(Integer employeeId);
 }

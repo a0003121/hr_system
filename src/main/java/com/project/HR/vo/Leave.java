@@ -24,6 +24,8 @@ public class Leave {
 	Integer id;
 	String name;
 	Integer day;
+	@Column(name="salary_count")
+	Float salaryCount;
 	
 	
 }
