@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +20,7 @@ import java.util.stream.Collectors;
 import static java.time.temporal.ChronoUnit.DAYS;
 
 @RestController
-public class JSONController_Salary {
+public class API_Salary {
     @Autowired
     EmployeeDAO employeeDAO;
     @Autowired

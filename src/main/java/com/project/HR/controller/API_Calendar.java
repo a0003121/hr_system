@@ -5,6 +5,7 @@ import com.project.HR.vo.Calendar;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,7 +17,7 @@ import java.util.List;
 
 @RestController
 //@EnableJpaAuditing//啟用審計(Auditing)
-public class JSONController_Calendar {
+public class API_Calendar {
     @Autowired
     CalendarDAO calendarDAO;
 
@@ -26,8 +27,9 @@ public class JSONController_Calendar {
         SimpleDateFormat converter = new SimpleDateFormat("yyyyMMdd");
         Date dateStart = converter.parse(year + "0101");
         Date dateEnd = converter.parse(year + "1231");
+
         List<Calendar> calendars = calendarDAO.findByDateBetween(new java.sql.Date(dateStart.getTime()),
-                new java.sql.Date(dateEnd.getTime()));
+                new java.sql.Date(dateEnd.getTime()), Sort.by("date").ascending());
 
         JSONArray jsonArray = new JSONArray();
         for (Calendar calendar : calendars) {

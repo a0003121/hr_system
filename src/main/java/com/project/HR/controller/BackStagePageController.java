@@ -55,4 +55,9 @@ public class BackStagePageController {
     public String gotoSalaryPage() {
         return "/admin/salary";
     }
+
+    @GetMapping("/clock.do")
+    public String gotoClockPage() {
+        return "/admin/clock";
+    }
 }

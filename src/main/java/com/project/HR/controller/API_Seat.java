@@ -9,13 +9,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.HR.dao.DeptDAO;
 import com.project.HR.dao.SeatDAO;
-import com.project.HR.vo.Dept;
 import com.project.HR.vo.Seat;
 
 @RestController
-public class JSONController_Seat {
+public class API_Seat {
 	@Autowired
 	SeatDAO seatDAO;
 	

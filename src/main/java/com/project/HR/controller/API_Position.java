@@ -13,7 +13,7 @@ import com.project.HR.dao.PositionDAO;
 import com.project.HR.vo.Position;
 
 @RestController
-public class JSONController_Position {
+public class API_Position {
 	
 	@Autowired
 	PositionDAO positionDAO;

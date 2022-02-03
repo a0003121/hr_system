@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<title>打卡紀錄</title>
+	<link rel="stylesheet" href="vendors/tablesort-5.3.0/tablesort.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+	<style>
+		div.input-group {
+			margin-top: 50px;
+		}
+
+		button.btn {
+			margin-right: 5px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="header"></div>
+	<h2 style="padding: 10px;">打卡紀錄</h2>
+	<main>
+		<div class="input-group mb-3 col">
+			<span class="input-group-text">選擇日期區間</span>
+			<input type="text" class="form-control" name="dates">
+		</div>
+		<button class="btn btn-outline-primary col-2 float-end" id="reSearch">查詢</button>
+		<button class="btn btn-outline-primary col-2 float-end" onclick="showImport()"><i class="fas fa-file-upload"
+				style="margin-right:5px"></i>匯入打卡紀錄</button>
+		<table class="table table-hover col" id="table">
+			<thead>
+				<tr>
+					<th></th>
+					<th>員工編號</th>
+					<th>部門</th>
+					<th>姓名</th>
+					<th id="sort_date">日期</th>
+					<th>上班時間</th>
+					<th>下班時間</th>
+					<th>狀態</th>
+					<td></td>
+					<td></td>
+				</tr>
+			</thead>
+			<tbody id="clock_list"></tbody>
+		</table>
+	</main>
+	<div class="popup_bg" id="import_pop" style="display: none">
+		<div class="popup_content">
+			<div class="row">
+				<div class="col-8">
+					<form method="POST" enctype="multipart/form-data" id="UploadForm">
+						<input class="form-control" type="file" name="fileUpload" id="formFile">
+						<input type="hidden" name="send" id="send_check" value="true">
+					</form>
+				</div>
+				<div class="col-4">
+					<a href="/downloadTemplate"><button class="update btn btn-outline-primary"><i
+								class="fas fa-file-download" style="margin-right: 5px"></i>下載範本</button></a>
+				</div>
+			</div>
+
+			<div style="height:300px;overflow:auto;margin: 10px 0;display: none;" id="show_data_result">
+				<div id="data_result"></div>
+				<table class="table">
+					<thead>
+						<tr>
+							<th>員工編號</th>
+							<th>姓名</th>
+							<th>時間</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="data_list"></tbody>
+				</table>
+			</div>
+
+			<button class="update btn btn-outline-primary float-end" id="cancel">取消</button>
+			<button class="update btn btn-outline-primary float-end" style=" display:none" id="confirm_upload" onclick="fileUpload()"><i
+					class="fas fa-file-upload" style="margin-right: 5px;" ></i>確認上傳</button>
+		</div>
+	</div>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src='vendors/tablesort-5.3.0/tablesort.js'></script>
+	<script src='vendors/tablesort-5.3.0/sorts/tablesort.number.js'></script>
+	<script src="public/util.js"></script>
+
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+	<script>
+
+		$("#header").load("/backheader");
+		let now = new Date();
+		let past = new Date(now.getTime() - 1000 * 60 * 60 * 24 * 30);
+		let nowStr = now.toLocaleDateString('en-GB').split('/').reverse().join('/');
+		let pastStr = past.toLocaleDateString('en-GB').split('/').reverse().join('/');
+		var sort;
+		$(function () {
+			$("#csrf").val(csrf());
+
+			//init datepicker
+			// https://www.daterangepicker.com/
+			$('input[name="dates"]').daterangepicker({
+				"locale": {
+					"format": "YYYY/MM/DD",
+					"separator": " ~ ",
+					"applyLabel": "確認",
+					"cancelLabel": "取消",
+					"fromLabel": "從",
+					"toLabel": "到",
+					"customRangeLabel": "自訂",
+					"weekLabel": "週",
+					"daysOfWeek": ["日", "一", "二", "三", "四", "五", "六"],
+					"monthNames": ["一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"
+					],
+					"firstDay": 1
+				},
+				"startDate": pastStr,
+				"endDate": nowStr,
+				// "minDate": "2022/01/27",
+				"maxDate": nowStr
+			}, function (start, end, label) {
+				nowStr = end.format('YYYY/MM/DD');
+				pastStr = start.format('YYYY/MM/DD');
+				// console.log('New date range selected: ' + start.format('YYYY/MM/DD') + ' to ' + end.format('YYYY/MM/DD') + ' (predefined range: ' + label + ')');
+			});
+
+			//sort
+			sort = new Tablesort(document.getElementById('table'));
+
+			//讀取打卡紀錄
+			refreshData(nowStr, pastStr);
+
+
+
+
+		});
+
+		//重新讀取打卡紀錄
+		$("#reSearch").on("click", function (e) {
+			refreshData(nowStr, pastStr);
+		});
+
+		$(".popup_bg, #cancel").on("click", function (e) {
+			$("div.popup_bg").hide();
+			$("#formFile").val('');
+			$("#show_data_result").hide();
+			$("#confirm_upload").hide();
+		});
+
+		$(".popup_content").on("click", function (e) {
+			e.stopPropagation();
+		});
+
+		function showImport() {
+			$("div#import_pop").show();
+		}
+		//取得打卡資料
+		function refreshData(now, past) {
+			$.ajax({
+				url: "http://localhost:8080/clock",
+				type: "GET",
+				data: {
+					end: now,
+					start: past
+				},
+				dataType: "json",
+				success: function (data) {
+					console.log(data);
+					$("#clock_list").html("");
+					for (emp in data) {
+						let dept = data[emp]["deptName"];
+						let empNo = data[emp]["empNo"];
+						let name = data[emp]["name"];
+						for (datas in data[emp]["data"]) {
+							let clockDate = data[emp]["data"][datas]["date"]
+							let status = "", startTime = "", endTime = "";
+							if (data[emp]["data"][datas]["no_record"]) {
+								status = "<span style='color:red'>無打卡紀錄</span>";
+							} else if (data[emp]["data"][datas]["off"]) {
+								status = "無須打卡";
+							} else {
+								status = "<span style='color:green'>正常</span>";
+								if (data[emp]["data"][datas]["startTime"]) {
+									startTime = (data[emp]["data"][datas]["startTime"].split(".")[0]);
+								}
+								if (data[emp]["data"][datas]["endTime"]) {
+									endTime = (data[emp]["data"][datas]["endTime"].split(".")[0]);
+								}
+							}
+
+
+							let html = `<tr>
+											<td></td>
+												<td>${empNo}</td>
+												<td>${dept}</td>
+												<td>${name}</td>
+												<td>${clockDate}</td>
+												<td>${startTime}</td>
+												<td>${endTime}</td>
+												<td>${status}</td>
+												<td></td>
+												<td></td>
+											<tr>`;
+							$("#clock_list").append(html);
+						}
+
+					}
+
+					//https://tristen.ca/tablesort/demo/
+					sort.refresh();
+					$("#sort_date").click();
+					$("#sort_date").click();
+				}
+			});
+		}
+
+		//上傳的檔案檢查
+		$("#formFile").on("change", function () {
+			$("#confirm_upload").show();
+			$("#send_check").val(false);
+			var formData = new FormData($("#UploadForm")[0]); // 使用FormData包裝form表單來傳輸資料
+			$.ajax({
+				type: "POST",               //使用POST傳輸,檔案上傳只能用POST
+				enctype: 'multipart/form-data', //將資料加密傳輸 檔案上傳一定要有的屬性
+				url: "/fileUpload?_csrf=" + csrf(),
+				data: formData,
+				processData: false, //防止jquery將data變成query String
+				contentType: false,
+				cache: false,  //不做快取
+				async: false, //設為同步
+				timeout: 1000000, //設定傳輸的timeout,時間內沒完成則中斷
+				success: function (data) {
+					$("#show_data_result").show();
+					let result = JSON.parse(data);
+					console.log(result);
+
+					$("#data_list").html("");
+					$("#data_result").html('總共上傳' + result["totalData"] + '筆，將有' + result["success"] + '筆成功上傳。');
+
+					for (index in result["result"]) {
+						let date = result["result"][index]["date"] ? result["result"][index]["date"] : "";
+						let empNo = result["result"][index]["empNo"] ? result["result"][index]["empNo"] : "";
+						let name = result["result"][index]["name"] ? result["result"][index]["name"] : "";
+						let status = "";
+						let html = "";
+						if (result["result"][index]["error"]) {
+							switch (result["result"][index]["error-message"]) {
+								case "empNo":
+									status = "無此員工編號";
+									break;
+								default:
+									status = "錯誤";
+							}
+							html += '<tr style="background-color:#ffd2d2">';
+						} else {
+							status = "成功";
+							html += '<tr>'
+						}
+
+						html += `<td>${empNo}</td>
+								<td>${name}</td>
+								<td>${date}</td>
+								<td>${status}</td>
+								<tr>`;
+						$("#data_list").append(html);
+					}
+				}
+			});
+		})
+
+		//檔案實際上傳
+		function fileUpload() {
+			$("#send_check").val(true);
+			var formData = new FormData($("#UploadForm")[0]); // 使用FormData包裝form表單來傳輸資料
+			$.ajax({
+				type: "POST",               //使用POST傳輸,檔案上傳只能用POST
+				enctype: 'multipart/form-data', //將資料加密傳輸 檔案上傳一定要有的屬性
+				url: "/fileUpload?_csrf=" + csrf(),
+				data: formData,
+				processData: false, //防止jquery將data變成query String
+				contentType: false,
+				cache: false,  //不做快取
+				async: false, //設為同步
+				timeout: 1000000, //設定傳輸的timeout,時間內沒完成則中斷
+				success: function (data) {
+					let result = JSON.parse(data);
+					console.log(result);
+					$("#cancel").click();
+					Swal.fire({
+						icon: 'success',
+						title: '總共上傳' + result["totalData"] + '筆，成功上傳' + result["success"] + '筆。',
+						text: '',
+					})
+					
+				}
+			});
+		}
+	</script>
+</body>
+
+</html>

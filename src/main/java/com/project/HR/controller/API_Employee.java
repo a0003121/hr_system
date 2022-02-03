@@ -17,7 +17,7 @@ import com.project.HR.dao.EmployeeDAO;
 import com.project.HR.vo.Employee;
 
 @RestController
-public class JSONController_Employee {
+public class API_Employee {
 	@Autowired
 	EmployeeDAO employeeDAO;
 

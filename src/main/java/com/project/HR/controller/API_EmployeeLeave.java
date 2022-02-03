@@ -2,17 +2,13 @@ package com.project.HR.controller;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-import java.text.Format;
-import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
-import org.apache.naming.java.javaURLContextFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +21,7 @@ import com.project.HR.vo.Calendar;
 import com.project.HR.vo.EmployeeLeave;
 
 @RestController
-public class JSONController_EmployeeLeave {
+public class API_EmployeeLeave {
 
 	@Autowired
 	EmployeeLeaveDAO employeeLeaveDAO;
@@ -107,7 +103,7 @@ public class JSONController_EmployeeLeave {
 		// 結束時間在午休
 		leaveEnd = leaveEnd > startBreak && leaveEnd < endBreak ? endBreak : leaveEnd;
 
-		List<Calendar> calendars = calendarDAO.findByDateBetween(startDate, endDate);
+		List<Calendar> calendars = calendarDAO.findByDateBetween(startDate, endDate, Sort.by("date").ascending());
 
 		// 如果請假日是休假
 		if (calendars.size() == 0 || (calendars.size() == 1 && calendars.get(0).getType() == 2)) {

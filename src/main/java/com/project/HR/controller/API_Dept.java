@@ -14,7 +14,7 @@ import com.project.HR.vo.Dept;
 
 @RestController
 //@EnableJpaAuditing//啟用審計(Auditing)
-public class JSONController_Dept {
+public class API_Dept {
 	@Autowired
 	DeptDAO deptDAO;
 	

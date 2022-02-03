@@ -18,7 +18,7 @@ import com.project.HR.vo.User;
 
 
 @RestController
-public class JSONController_Insurance {
+public class API_Insurance {
 	
 	@Autowired
 	InsuranceDAO insuranceDAO;

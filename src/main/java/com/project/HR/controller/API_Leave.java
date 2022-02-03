@@ -10,12 +10,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.HR.dao.LeaveDAO;
-import com.project.HR.dao.PositionDAO;
 import com.project.HR.vo.Leave;
-import com.project.HR.vo.Position;
 
 @RestController
-public class JSONController_Leave {
+public class API_Leave {
 	
 	@Autowired
 	LeaveDAO leaveDAO;

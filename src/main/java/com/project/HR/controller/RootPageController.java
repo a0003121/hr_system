@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import com.project.HR.security.MyUserDetails;
 
 @Controller
-public class PageController {
+public class RootPageController {
 	
 	// Login form  
     @RequestMapping("/login")  
