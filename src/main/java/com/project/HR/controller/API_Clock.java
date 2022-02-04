@@ -1,10 +1,9 @@
 package com.project.HR.controller;
 
-import com.project.HR.dao.CalendarDAO;
-import com.project.HR.dao.ClockRawDAO;
-import com.project.HR.dao.ClockTimeDAO;
-import com.project.HR.dao.EmployeeDAO;
+import com.project.HR.dao.*;
+import com.project.HR.service.LeaveService;
 import com.project.HR.util.Constant;
+import com.project.HR.vo.Calendar;
 import com.project.HR.vo.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -13,10 +12,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,7 +25,7 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.*;
 
 @RestController
 //@EnableJpaAuditing//啟用審計(Auditing)
@@ -45,7 +42,44 @@ public class API_Clock {
     @Autowired
     ClockRawDAO clockRawDAO;
 
+    @Autowired
+    EmployeeLeaveDAO employeeLeaveDAO;
+
+    @Autowired
+    LeaveService leaveService;
+
     /////////////////打卡紀錄///////////////////
+
+    //取得個人某日的打卡和請假紀錄
+    @GetMapping("/clockRecord")
+    public String getRecordByEmpnoAndDate(int empNo, String date) throws ParseException {
+        JSONArray clockResult = new JSONArray();
+        JSONArray leaveResult = new JSONArray();
+
+        SimpleDateFormat converter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat converter2 = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat converter3 = new SimpleDateFormat("HH:mm");
+        Timestamp timeStart = new Timestamp(converter1.parse(date + " 00:00").getTime());
+        Timestamp timeEnd = new Timestamp(converter1.parse(date + " 24:00").getTime());
+        //打卡紀錄
+        List<ClockRaw> recordList = clockRawDAO.findByTimeBetweenAndEmpNoOrderByTimeAsc(timeStart, timeEnd, empNo);
+        for (ClockRaw clockRaw : recordList) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", clockRaw.getId());
+            obj.put("date", converter2.format(clockRaw.getTime()));
+            obj.put("time", converter3.format(clockRaw.getTime()));
+            clockResult.put(obj);
+        }
+        //請假紀錄
+        List<EmployeeLeave> leaveList = employeeLeaveDAO.findByEmployeeIdAndLeaveDate(empNo, converter2.parse(date));
+        for (EmployeeLeave employeeLeave : leaveList) {
+            leaveResult.put(new JSONObject(employeeLeave));
+        }
+        JSONObject result = new JSONObject();
+        result.put("clock", clockResult);
+        result.put("leave", leaveResult);
+        return result.toString();
+    }
 
     //取得打卡紀錄
     @GetMapping("/clock")
@@ -76,33 +110,41 @@ public class API_Clock {
 
             for (Calendar calendar : calendarList) {
                 JSONObject tempObj = new JSONObject(calendar);
-                //如果比對日是放假日
-                if (calendar.getType() == Constant.CALENDER_OFFDAY) {
-                    tempObj.put("off", true);
-                    dataArr.put(tempObj);
-                    continue;
-                }
-
 
                 //如果比對日有員工刷卡紀錄
                 if (index + 1 <= clockList.size()) {
                     LocalDate clockDate = clockList.get(index).getClockDate().toLocalDate();
                     LocalDate calDate = calendar.getDate().toLocalDate(); // Pass a time zone to get current date in UTC for fair comparison.
                     if (calDate.isEqual(clockDate)) {
+                        //SimpleDateFormat converter = new SimpleDateFormat("yyyy/MM/dd");
+
                         tempObj.put("startTime", clockList.get(index).getStartTime());
                         tempObj.put("endTime", clockList.get(index).getEndTime());
                         tempObj.put("clockDate", clockList.get(index).getClockDate());
-                        dataArr.put(tempObj);
+                        tempObj.put("status", clockList.get(index).getStatus());
+
+                        //刪除沒資料的資料
+                        if (clockList.get(index).getStartTime() == null && clockList.get(index).getEndTime() == null) {
+                            clockTimeDAO.deleteById(clockList.get(index).getId());
+                        }
+
                         index++;
+
+
                     } else {
                         tempObj.put("no_record", true);
-                        dataArr.put(tempObj);
                     }
-
                 } else { //如果比對日無員工刷卡紀錄
                     tempObj.put("no_record", true);
-                    dataArr.put(tempObj);
                 }
+                //如果比對日是放假日
+                if (calendar.getType() == Constant.CALENDER_OFFDAY) {
+                    tempObj.put("off", true);
+                    tempObj.put("no_record", false);
+                }
+                dataArr.put(tempObj);
+
+
             }
             empObj.put("data", dataArr);
             resultArr.put(empObj);
@@ -211,7 +253,7 @@ public class API_Clock {
                             date = new Timestamp(cell.getDateCellValue().getTime());
                             break;
                     }
-                } catch (IllegalStateException e) {
+                } catch (IllegalStateException | NullPointerException e) {
                     checkpoint = true;
                 }
             }
@@ -265,5 +307,130 @@ public class API_Clock {
             default:
                 return cell.toString();
         }
+    }
+
+    //打卡比對
+    @Transactional
+    @GetMapping("/compareClock")
+    public String compareClock(String end, String start) throws ParseException {
+        SimpleDateFormat converter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+        Timestamp timeStart = new Timestamp(converter.parse(start + " 00:00").getTime());
+        Timestamp timeEnd = new Timestamp(converter.parse(end + " 24:00").getTime());
+        SimpleDateFormat converter2 = new SimpleDateFormat("yyyy/MM/dd");
+        List<ClockRaw> rawList = clockRawDAO.findByTimeBetweenOrderByEmpNoAscTimeAsc(timeStart, timeEnd);
+
+        //取得員工編號清單
+        Set<Integer> empNoList = new HashSet<>();
+        for (ClockRaw clockRaw : rawList) {
+            empNoList.add(clockRaw.getEmpNo());
+        }
+
+        for (int empNo : empNoList) {
+            Map<String, List<ClockRaw>> timeMap = new HashMap<>();
+            for (ClockRaw clockRaw : rawList) {
+                if (clockRaw.getEmpNo() == empNo) {
+                    //找出相同日期的存在一起
+                    Timestamp timeFromData = clockRaw.getTime();
+                    String date = converter2.format(new java.util.Date(timeFromData.getTime()));
+
+                    if (!timeMap.containsKey(date)) {
+                        List<ClockRaw> temp = new ArrayList<>();
+                        temp.add(clockRaw);
+                        timeMap.put(date, temp);
+                    } else {
+                        timeMap.get(date).add(clockRaw);
+                    }
+                }
+            }
+            //更新資料庫資料
+            for (String belongDate : timeMap.keySet()) {
+                //先刪舊資料
+                clockTimeDAO.deleteByEmpNoAndClockDate(empNo, converter2.parse(belongDate));
+
+                //新增資料
+                List<ClockRaw> eachDateList = timeMap.get(belongDate);
+                ClockTime clockTime = new ClockTime(0, new Date(converter2.parse(belongDate).getTime()), empNo, null, null, null, null, null);
+                if (eachDateList.size() == 1) { //日期只有一筆資料
+                    long workStart = converter.parse(belongDate + " 09:00").getTime();
+                    long workEnd = converter.parse(belongDate + " 18:00").getTime();
+                    long compareDate = eachDateList.get(0).getTime().getTime();
+
+                    if (Math.abs(workStart - compareDate) <= Math.abs(workEnd - compareDate)) {
+                        clockTime.setStartTime(eachDateList.get(0).getTime());
+                        clockTime.setStartId(eachDateList.get(0).getId());
+                    } else {
+                        clockTime.setEndTime(eachDateList.get(0).getTime());
+                        clockTime.setEndId(eachDateList.get(0).getId());
+                    }
+
+                    clockTime.setStatus(Constant.UNNORMAL); //異常
+                } else {
+                    clockTime.setStartTime(eachDateList.get(0).getTime());
+                    clockTime.setStartId(eachDateList.get(0).getId());
+                    clockTime.setEndTime(eachDateList.get(eachDateList.size() - 1).getTime());
+                    clockTime.setEndId(eachDateList.get(eachDateList.size() - 1).getId());
+                    //比對上班時間是否異常
+                    long startTime = clockTime.getStartTime().getTime();
+                    long endTime = clockTime.getEndTime().getTime();
+
+                    double workingTime = leaveService.getWorkingHour(startTime, endTime);
+                    List<EmployeeLeave> leaveList = employeeLeaveDAO.findByEmployeeIdAndLeaveDate(empNo, converter2.parse(belongDate));
+                    for (EmployeeLeave employeeLeave : leaveList) {
+                        long leaveStart = employeeLeave.getStartTime().getTime();
+                        long leaveEnd = employeeLeave.getEndTime().getTime();
+                        workingTime += leaveService.getWorkingHour(leaveStart, leaveEnd);
+
+                        if (startTime < leaveStart && endTime > leaveEnd) { //請假時間在打卡區間裡
+                            workingTime -= leaveService.getWorkingHour(leaveStart, leaveEnd);
+                        } else if (startTime < leaveStart && endTime > leaveStart) { //請假時間重複，打卡時間較早
+                            workingTime -= leaveService.getWorkingHour(leaveEnd, startTime);
+                        } else if (leaveStart < startTime && leaveEnd > startTime) { //請假時間重複，打卡時間較晚
+                            workingTime -= leaveService.getWorkingHour(startTime, leaveEnd);
+                        }
+
+                    }
+
+                    if (workingTime >= 8) { //上班時間有八小時
+                        clockTime.setStatus(Constant.NORMAL); //正常
+                    } else {
+                        clockTime.setStatus(Constant.UNNORMAL); //異常
+                    }
+
+
+                }
+                clockTimeDAO.save(clockTime);
+            }
+        }
+
+        return "success";
+    }
+
+    @PostMapping("/clockRaw")
+    public ClockRaw createClockTime(int empNo, String time) throws ParseException {
+        ClockRaw clockRaw = new ClockRaw(0, new Timestamp(new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(time).getTime()), empNo);
+        return clockRawDAO.save(clockRaw);
+    }
+
+    @DeleteMapping("/clockRaw")
+    public String deleteEmployee(int id) {
+        clockRawDAO.deleteById(id);
+
+        //將clockTime的相關資料作刪除
+        List<ClockTime> clockTimeList = clockTimeDAO.findByStartId(id);
+        for (ClockTime clockTime : clockTimeList) {
+            clockTime.setStartTime(null);
+            clockTime.setStartId(null);
+            clockTime.setStatus(Constant.UNNORMAL);
+            clockTimeDAO.save(clockTime);
+        }
+
+        clockTimeList = clockTimeDAO.findByEndId(id);
+        for (ClockTime clockTime : clockTimeList) {
+            clockTime.setEndTime(null);
+            clockTime.setEndId(null);
+            clockTime.setStatus(Constant.UNNORMAL);
+            clockTimeDAO.save(clockTime);
+        }
+        return "{\"delete\":\"success!\"}";
     }
 }

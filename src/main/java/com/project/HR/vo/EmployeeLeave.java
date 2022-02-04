@@ -1,7 +1,5 @@
 package com.project.HR.vo;
 
-import java.sql.Date;
-import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -16,6 +14,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.sql.Timestamp;
+import java.util.Date;
 
 @Entity
 @Table(name="employee_leave")
@@ -33,7 +34,10 @@ public class EmployeeLeave {
 	
 	@Column(name = "leave_id")
 	Integer leaveId;
-	
+
+	@Column(name="leave_date")
+	Date leaveDate;
+
 	@Column(name="start_time")
 	Timestamp startTime;
 	

@@ -9,6 +9,11 @@ import java.util.List;
 
 public interface ClockTimeDAO extends JpaRepository<ClockTime, Integer> {
     List<ClockTime> findByStartTimeLessThanEqualAndEndTimeGreaterThanEqual(Date start, Date end);
+    List<ClockTime> findByEmpNoAndClockDateBetween(Integer empNo, Date startDate, Date endDate, Sort sort);
+    List<ClockTime> findByEmpNoAndClockDate(Integer empNo, Date clockDate);
+    List<ClockTime> findByStartId(Integer startId);
+    List<ClockTime> findByEndId(Integer endId);
+    void deleteByEmpNoAndClockDate(Integer empNo, Date clockDate);
 //    Page<ClockTime> findByClockDateBetween(Date startDate, Date endDate, Pageable pageable);
 //    Pageable sortedByDate = PageRequest.of(0, 3, Sort.by("clockDate"));
 //    Page<ClockTime> pageResult = clockTimeDAO.findByClockDateBetween(new java.sql.Date(dateStart), new java.sql.Date(dateEnd), sortedByDate);
@@ -18,5 +23,4 @@ public interface ClockTimeDAO extends JpaRepository<ClockTime, Integer> {
 //        pageResult.getTotalPages();       // 全部頁數
 //
 //        return pageResult.getContent();
-    List<ClockTime> findByEmpNoAndClockDateBetween(Integer empNo, Date startDate, Date endDate, Sort sort);
 }

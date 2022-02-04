@@ -27,5 +27,9 @@ public class ClockTime {
 	Timestamp startTime;
 	@Column(name="end_time")
 	Timestamp endTime;
+	@Column(name="start_id")
+	Integer startId;
+	@Column(name="end_id")
+	Integer endId;
 	Integer status;
 }
