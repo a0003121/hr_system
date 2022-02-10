@@ -1,20 +1,19 @@
 package com.project.HR.controller;
 
-import java.util.List;
+import com.project.HR.dao.EmployeeDAO;
+import com.project.HR.dao.InsuranceDAO;
+import com.project.HR.dao.UserDAO;
+import com.project.HR.vo.Employee;
+import com.project.HR.vo.Insurance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.project.HR.dao.AuthorityDAO;
-import com.project.HR.dao.EmployeeDAO;
-import com.project.HR.dao.InsuranceDAO;
-import com.project.HR.dao.UserDAO;
-import com.project.HR.vo.Authority;
-import com.project.HR.vo.Employee;
-import com.project.HR.vo.Insurance;
-import com.project.HR.vo.User;
+import java.util.List;
 
 
 @RestController
@@ -31,12 +30,12 @@ public class API_Insurance {
 	//////////*保險*///////////
 	
 	@GetMapping("/insurances")
-	public List<Insurance> getInsurances(){
-		return insuranceDAO.findAll();
+	public ResponseEntity<List<Insurance>> getInsurances(){
+		return ResponseEntity.ok(insuranceDAO.findAll());
 	}
 	
 	@PutMapping("/insurance")
-	public Employee updateEmployee(int id, int work, int health, int compensation) {
+	public ResponseEntity<Employee> updateEmployee(int id, int work, int health, int compensation) {
 		Employee employee= employeeDAO.findById(id).get();
 		
 		employee.setCompensation(compensation);
@@ -46,22 +45,11 @@ public class API_Insurance {
 		try {
 			result = employeeDAO.save(employee);
 		} catch (DataIntegrityViolationException  e) {
-			return new Employee();
+			return ResponseEntity
+					.status(HttpStatus.NOT_ACCEPTABLE)
+					.body(new Employee());
 		}
-		return result;
-	}
-	
-	
-	@GetMapping("/auth")
-	public List<User> getAuth(){
-		return userDAO.findAll();
-	}
-	
-	@Autowired
-	AuthorityDAO authorityDAO;
-	@GetMapping("/test")
-	public List<Authority> getAuddth(){
-		return authorityDAO.findAll();
+		return ResponseEntity.ok(result);
 	}
 	
 }

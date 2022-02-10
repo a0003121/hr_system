@@ -3,9 +3,10 @@ package com.project.HR.controller;
 import com.project.HR.dao.EmployeeLeaveDAO;
 import com.project.HR.service.LeaveService;
 import com.project.HR.vo.EmployeeLeave;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
@@ -24,24 +25,17 @@ public class API_EmployeeLeave {
 
     ////////// *員工休假*///////////
     @GetMapping("/employeeLeaves")
-    public String getAllEmployeeLeaves() {
-        List<EmployeeLeave> list = employeeLeaveDAO.findAll();
-        JSONArray jsonArray = new JSONArray();
-        for (EmployeeLeave employeeLeave : list) {
-            JSONObject object = new JSONObject(employeeLeave);
-            jsonArray.put(object);
-        }
-        return jsonArray.toString();
+    public  ResponseEntity<List<EmployeeLeave>> getAllEmployeeLeaves() {
+        return ResponseEntity.ok(employeeLeaveDAO.findAll());
     }
 
     @GetMapping("/employeeLeave")
-    public String getOneEmployeeLeave(String id) {
-        JSONObject object = new JSONObject(employeeLeaveDAO.findById(Integer.parseInt(id)).get());
-        return object.toString();
+    public  ResponseEntity<EmployeeLeave> getOneEmployeeLeave(String id) {
+        return ResponseEntity.ok(employeeLeaveDAO.findById(Integer.parseInt(id)).get());
     }
 
     @PostMapping("/employeeLeave")
-    public String createEmployeeLeave(int employeeId, int leaveId, String date, float hours, long startTime, long endTime) throws ParseException {
+    public  ResponseEntity<String> createEmployeeLeave(int employeeId, int leaveId, String date, float hours, long startTime, long endTime) throws ParseException {
         //檢查有沒有重複
         List<EmployeeLeave> checkList = employeeLeaveDAO.findByEmployeeIdAndLeaveDate(employeeId, new SimpleDateFormat("yyyy-MM-dd").parse(date));
         for(EmployeeLeave employeeLeave:checkList){
@@ -50,7 +44,9 @@ public class API_EmployeeLeave {
             if ((startTime < startCheck && endTime > startCheck) ||(startCheck < startTime && endCheck > startTime)) { //請假時間重複
                 JSONObject obj = new JSONObject();
                 obj.put("repeat", true);
-                return obj.toString();
+                return ResponseEntity
+                        .status(HttpStatus.NOT_ACCEPTABLE)
+                        .body(obj.toString());
             }
         }
         EmployeeLeave employeeLeave = new EmployeeLeave();
@@ -61,11 +57,11 @@ public class API_EmployeeLeave {
         employeeLeave.setLeaveDate(new SimpleDateFormat("yyyy-MM-dd").parse(date));
         employeeLeave.setStartTime(new Timestamp(startTime));
         employeeLeave.setEndTime(new Timestamp(endTime));
-        return new JSONObject(employeeLeaveDAO.save(employeeLeave)).toString();
+        return ResponseEntity.ok(new JSONObject(employeeLeaveDAO.save(employeeLeave)).toString());
     }
 
     @PutMapping("/employeeLeave")
-    public String updateEmployeeLeave(int id, int leaveId, float hours, String date, long startTime, long endTime) throws ParseException {
+    public  ResponseEntity<String> updateEmployeeLeave(int id, int leaveId, float hours, String date, long startTime, long endTime) throws ParseException {
         EmployeeLeave employeeLeave = employeeLeaveDAO.findById(id).get();
         //檢查有沒有重複
         List<EmployeeLeave> checkList = employeeLeaveDAO.findByEmployeeIdAndLeaveDate(employeeLeave.getEmployeeId(), new SimpleDateFormat("yyyy-MM-dd").parse(date));
@@ -77,7 +73,9 @@ public class API_EmployeeLeave {
                 if ((startTime < startCheck && endTime > startCheck) ||(startCheck < startTime && endCheck > startTime)) { //請假時間重複
                     JSONObject obj = new JSONObject();
                     obj.put("repeat", true);
-                    return obj.toString();
+                    return ResponseEntity
+                            .status(HttpStatus.NOT_ACCEPTABLE)
+                            .body(obj.toString());
                 }
             }
         }
@@ -88,13 +86,13 @@ public class API_EmployeeLeave {
         employeeLeave.setStartTime(new Timestamp(startTime));
         employeeLeave.setEndTime(new Timestamp(endTime));
         employeeLeave = employeeLeaveDAO.save(employeeLeave);
-        return new JSONObject(employeeLeaveDAO.save(employeeLeave)).toString();
+        return ResponseEntity.ok(new JSONObject(employeeLeaveDAO.save(employeeLeave)).toString());
     }
 
     @DeleteMapping("/employeeLeaves")
-    public String deleteEmployeeLeave(int id) {
+    public  ResponseEntity<String> deleteEmployeeLeave(int id) {
         employeeLeaveDAO.deleteById(id);
-        return "{\"delete\":\"success!\"}";
+        return ResponseEntity.ok("{\"delete\":\"success!\"}");
     }
 
     // 取得請假天數

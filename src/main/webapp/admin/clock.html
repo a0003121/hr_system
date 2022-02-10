@@ -25,6 +25,7 @@
 <body>
 	<div id="header"></div>
 	<h2 style="padding: 10px;">打卡紀錄</h2>
+
 	<main>
 		<div class="row">
 			<div class="col-6">
@@ -59,6 +60,22 @@
 			</thead>
 			<tbody id="clock_list"></tbody>
 		</table>
+
+		<div class="row">
+			<nav aria-label="Page navigation">
+				<ul class="pagination justify-content-center">
+					<li class="page-prev page-item"><a href="#" class="page-link">&laquo;</a></li>
+					<select id="page" class="form-control"
+						style="width: auto;border-radius: 0;    border-left-color: transparent;"
+						aria-label="Default select example">
+					</select>
+					<li class="page-item disabled"><a class="page-link" style="border-left: none;"
+							id="total_page">/3</a></li>
+					<li class="page-next page-item"><a href="#" class="page-link">&raquo;</a></li>
+					<li class="page-item disabled"><a class="page-link" id="item_total">共幾個結果</a></li>
+				</ul>
+			</nav>
+		</div>
 	</main>
 	<div class="popup_bg" id="import_pop" style="display: none">
 		<div class="popup_content">
@@ -158,8 +175,9 @@
 		let pastStr = past.toLocaleDateString('en-GB').split('/').reverse().join('/');
 		let compareNow = nowStr;
 		let comparePast = pastStr;
-		var temp_empNo, temp_name, temp_clockDate
+		var temp_empNo, temp_name, temp_clockDate;
 		var sort;
+		var items_total, itemsPerPage = 20, page_total, current_page = 1;
 		$(function () {
 			$("#csrf").val(csrf());
 			let condition = {
@@ -197,6 +215,10 @@
 			//sort
 			sort = new Tablesort(document.getElementById('table'));
 
+			document.getElementById('table').addEventListener('afterSort', function () {
+				reorderPage("#clock_list tr.clock_items");
+				changePage("#clock_list tr.clock_items", current_page);
+			});
 			//讀取打卡紀錄
 			refreshData(nowStr, pastStr);
 
@@ -284,38 +306,38 @@
 				console.log(data);
 			});
 		}
-		
-		function deleteClockRaw(id){
+
+		function deleteClockRaw(id) {
 			swal.fire({
-					title: '確定刪除?',
-					text: "",
-					icon: 'warning',
-					showCancelButton: true,
-					cancelButtonText: '取消',
-					confirmButtonText: '確定'
-				}).then((result) => {
-					if (result.isConfirmed) {
-						$.ajax({
-							url: "http://localhost:8080/clockRaw",
-							type: "DELETE",
-							data: {
-								"id": id,
-								"_csrf": csrf()
-							},
-							dataType: "json",
-							success: function (data) {
-								refreshData(nowStr, pastStr);
-								showClockDetail(temp_empNo, temp_name, temp_clockDate);
-								Swal.fire({
-									icon: 'success',
-									title: '刪除成功!',
-									text: '',
-									timer: 2000
-								})
-							}
-						});
-					}
-				})
+				title: '確定刪除?',
+				text: "",
+				icon: 'warning',
+				showCancelButton: true,
+				cancelButtonText: '取消',
+				confirmButtonText: '確定'
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.ajax({
+						url: "http://localhost:8080/clockRaw",
+						type: "DELETE",
+						data: {
+							"id": id,
+							"_csrf": csrf()
+						},
+						dataType: "json",
+						success: function (data) {
+							refreshData(nowStr, pastStr);
+							showClockDetail(temp_empNo, temp_name, temp_clockDate);
+							Swal.fire({
+								icon: 'success',
+								title: '刪除成功!',
+								text: '',
+								timer: 2000
+							})
+						}
+					});
+				}
+			})
 		}
 		//重新讀取打卡紀錄
 		$("#reSearch").on("click", function (e) {
@@ -378,10 +400,10 @@
 							if (data[emp]["data"][datas]["off"]) {
 								status = "無須打卡";
 							}
-							
 
 
-							let html = `<tr>
+
+							let html = `<tr class="clock_items">
 											<td></td>
 												<td>${empNo}</td>
 												<td>${dept}</td>
@@ -397,11 +419,14 @@
 						}
 
 					}
-
+					//排序
 					//https://tristen.ca/tablesort/demo/
 					sort.refresh();
 					$("#sort_date").click();
 					$("#sort_date").click();
+
+					pageSetting("#clock_list tr.clock_items");
+
 				}
 			});
 		}
@@ -509,6 +534,9 @@
 				refreshData(nowStr, pastStr);
 			});
 		}
+
+		
+		
 	</script>
 </body>
 

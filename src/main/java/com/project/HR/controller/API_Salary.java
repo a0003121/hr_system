@@ -3,6 +3,7 @@ package com.project.HR.controller;
 import com.project.HR.dao.*;
 import com.project.HR.vo.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,32 +36,32 @@ public class API_Salary {
 
     //取得薪資計算區間員工名單
     @GetMapping("/salary_member")
-    public List<Employee> getAllSalaryCalculateMember(Long startDate, Long endDate) {
-        return employeeDAO.findSalaryMemberByHireDateAndLeaveDate(new Date(startDate), new Date(endDate));
+    public ResponseEntity<List<Employee>> getAllSalaryCalculateMember(Long startDate, Long endDate) {
+        return ResponseEntity.ok(employeeDAO.findSalaryMemberByHireDateAndLeaveDate(new Date(startDate), new Date(endDate)));
     }
 
     @GetMapping("/salaryInfo")
-    public List<SalaryInfo> getAllSalaryInfo() {
-        return salaryInfoDAO.findAll();
+    public ResponseEntity<List<SalaryInfo>> getAllSalaryInfo() {
+        return ResponseEntity.ok(salaryInfoDAO.findAll());
     }
 
     @GetMapping("/salaryStatistics")
-    public List<SalaryStatistics> getSalaryStatisticsbyInfoId(int infoId) {
-        return salaryStatisticsDAO.findByInfoId(infoId);
+    public ResponseEntity<List<SalaryStatistics>> getSalaryStatisticsbyInfoId(int infoId) {
+        return ResponseEntity.ok(salaryStatisticsDAO.findByInfoId(infoId));
     }
 
     @Transactional
     @DeleteMapping("/salaryInfo")
-    public String deleteSalaryInfo(int id) {
+    public ResponseEntity<String> deleteSalaryInfo(int id) {
         salaryStatisticsDAO.deleteByInfoId(id);
         salaryInfoDAO.deleteById(id);
-        return "{\"delete\":\"success!\"}";
+        return ResponseEntity.ok("{\"delete\":\"success!\"}");
     }
 
     //取得薪資計算區間員工名單
     @Transactional
     @GetMapping("/perform_cal")
-    public SalaryInfo performCal(Long startDate, Long endDate, @RequestParam(value = "ids[]") String[] ids, String name) {
+    public ResponseEntity<SalaryInfo> performCal(Long startDate, Long endDate, @RequestParam(value = "ids[]") String[] ids, String name) {
         //取得計算天數
         java.util.Calendar start = java.util.Calendar.getInstance();
         start.setTimeInMillis(startDate);
@@ -99,7 +100,7 @@ public class API_Salary {
             SalaryStatistics salaryStatistics = new SalaryStatistics(0, salaryInfo.getId(), employee.getEmpNo(), Math.round(calculateResult));
             salaryStatisticsDAO.save(salaryStatistics);
         }
-        return salaryInfo;
+        return ResponseEntity.ok(salaryInfo);
     }
 
 }

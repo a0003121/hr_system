@@ -92,7 +92,7 @@
 
 		//頁面初始加載資料
 		function init() {
-			
+
 
 			//取得保險資訊
 			$.ajax({
@@ -188,24 +188,24 @@
 					},
 					dataType: "json",
 					success: function (data) {
-						if (data["id"] != null) {
-							$("div#update_pop").hide();
-							Swal.fire({
-								icon: 'success',
-								title: '更新成功!',
-								text: '',
-								timer: 2000
-							}).then((result) => {
-								getEmployeeData();
-							})
-						} else {
-							Swal.fire({
-								icon: 'error',
-								title: '更新失敗!',
-								text: '',
-								timer: 2000
-							})
-						}
+						$("div#update_pop").hide();
+						Swal.fire({
+							icon: 'success',
+							title: '更新成功!',
+							text: '',
+							timer: 2000
+						}).then((result) => {
+							getEmployeeData();
+						})
+					},
+					error: function (data) {
+						console.log(data);
+						Swal.fire({
+							icon: 'error',
+							title: '更新失敗!',
+							text: '',
+							timer: 2000
+						})
 					}
 				});
 			});
@@ -225,7 +225,7 @@
 
 		}
 
-		function getEmployeeData(){
+		function getEmployeeData() {
 			//取得員工資料
 			$.ajax({
 				url: "http://localhost:8080/employees",

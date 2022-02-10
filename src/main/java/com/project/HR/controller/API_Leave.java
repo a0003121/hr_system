@@ -1,16 +1,12 @@
 package com.project.HR.controller;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.project.HR.dao.LeaveDAO;
 import com.project.HR.vo.Leave;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class API_Leave {
@@ -20,37 +16,37 @@ public class API_Leave {
 	
 	//////////*職位*///////////
 	@GetMapping("/leaves")
-	public List<Leave> getAllLeaves(){
-		return leaveDAO.findAll();
+	public ResponseEntity<List<Leave>> getAllLeaves(){
+		return ResponseEntity.ok(leaveDAO.findAll());
 	}
 	
 	@GetMapping("/leave")
-	public Leave getOneLeave(String id){
-		return leaveDAO.findById(Integer.parseInt(id)).get();
+	public ResponseEntity<Leave> getOneLeave(String id){
+		return ResponseEntity.ok(leaveDAO.findById(Integer.parseInt(id)).get());
 	}
 	
 	@PostMapping("/leave")
-	public Leave createLeave(String name, int day){
+	public ResponseEntity<Leave> createLeave(String name, int day){
 		Leave leave = new Leave();
 		leave.setId(0);
 		leave.setName(name);
 		leave.setDay(day);
-		return leaveDAO.save(leave);
+		return ResponseEntity.ok(leaveDAO.save(leave));
 	}
 	
 	@PutMapping("/leave")
-	public Leave updateLeave(int id, String name, int day){
+	public ResponseEntity<Leave> updateLeave(int id, String name, int day){
 		Leave leave = new Leave();
 		leave.setId(0);
 		leave.setName(name);
 		leave.setDay(day);
-		return leaveDAO.save(leave);
+		return ResponseEntity.ok(leaveDAO.save(leave));
 	}
 	
 	@DeleteMapping("/leave")
-	public String deletePosition(int id){
+	public ResponseEntity<String> deletePosition(int id){
 		leaveDAO.deleteById(id);
-		return "{\"delete\":\"success!\"}";
+		return ResponseEntity.ok("{\"delete\":\"success!\"}");
 	}
 	
 }

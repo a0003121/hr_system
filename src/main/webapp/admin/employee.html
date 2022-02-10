@@ -57,6 +57,22 @@
 			</thead>
 			<tbody id="employee_list"></tbody>
 		</table>
+
+		<div class="row">
+			<nav aria-label="Page navigation">
+				<ul class="pagination justify-content-center">
+					<li class="page-prev page-item"><a href="#" class="page-link">&laquo;</a></li>
+					<select id="page" class="form-control"
+						style="width: auto;border-radius: 0;    border-left-color: transparent;"
+						aria-label="Default select example">
+					</select>
+					<li class="page-item disabled"><a class="page-link" style="border-left: none;"
+							id="total_page">/3</a></li>
+					<li class="page-next page-item"><a href="#" class="page-link">&raquo;</a></li>
+					<li class="page-item disabled"><a class="page-link" id="item_total">共幾個結果</a></li>
+				</ul>
+			</nav>
+		</div>
 	</main>
 
 
@@ -167,6 +183,7 @@
 		var current_id = 0;
 		var positions;
 		let csrf_value = csrf();
+		var items_total, itemsPerPage = 20, page_total, current_page = 1;
 		$("#header").load("/backheader");
 		$(function () {
 			init();
@@ -187,7 +204,7 @@
 					$("td.filter_dept").each(function (index) {
 						if ($(this).attr("data-dept") != dept_match) {
 							$(this).parent().hide();
-						} 
+						}
 					})
 				}
 				//狀態篩選
@@ -196,14 +213,14 @@
 					$("td.filter_status").each(function (index) {
 						if ($(this).attr("data-status") != status_match) {
 							$(this).parent().hide();
-						} 
+						}
 					})
 				}
 				//姓名員編篩選
 				let name_match = $("#search_idName").val();
-				if(name_match.trim() != 0) {
+				if (name_match.trim() != 0) {
 					$("tr.search_name").each(function (index) {
-						if(!$(this).attr("data-search").includes(name_match)){
+						if (!$(this).attr("data-search").includes(name_match)) {
 							$(this).hide();
 						}
 					})
@@ -373,24 +390,23 @@
 					},
 					dataType: "json",
 					success: function (data) {
-						if (data["id"] != null) {
-							console.log(data);
-							$("#employee_list").prepend(getNewRowHtml(data, deptName, positionName));
-							Swal.fire({
-								icon: 'success',
-								title: '新增成功!',
-								text: '',
-								timer: 2000
-							})
-							$("#new_pop").hide();
-						} else {
-							Swal.fire({
-								icon: 'error',
-								title: '新增失敗! 員工編號重複!',
-								text: '',
-								timer: 2000
-							})
-						}
+						console.log(data);
+						$("#employee_list").prepend(getNewRowHtml(data, deptName, positionName));
+						Swal.fire({
+							icon: 'success',
+							title: '新增成功!',
+							text: '',
+							timer: 2000
+						})
+					},
+					error: function (data) {
+						console.log(data);
+						Swal.fire({
+							icon: 'error',
+							title: '新增失敗! 員工編號重複!',
+							text: '',
+							timer: 2000
+						})
 					}
 
 				});
@@ -552,6 +568,8 @@
 						deptList[data[item]["dept"]] = data[item]["deptName"]["name"];
 						$("#employee_list").append(getNewRowHtml(data[item], data[item]["deptName"]["name"], data[item]["positionName"]["name"]));
 					}
+
+					pageSetting("#employee_list tr")
 				}
 			});
 			for (index in deptList) {

@@ -3,7 +3,6 @@ package com.project.HR.controller;
 import com.project.HR.dao.*;
 import com.project.HR.service.LeaveService;
 import com.project.HR.util.Constant;
-import com.project.HR.vo.Calendar;
 import com.project.HR.vo.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFFont;
@@ -12,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,7 +25,9 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 //@EnableJpaAuditing//啟用審計(Auditing)
@@ -52,7 +54,7 @@ public class API_Clock {
 
     //取得個人某日的打卡和請假紀錄
     @GetMapping("/clockRecord")
-    public String getRecordByEmpnoAndDate(int empNo, String date) throws ParseException {
+    public ResponseEntity<String> getRecordByEmpnoAndDate(int empNo, String date) throws ParseException {
         JSONArray clockResult = new JSONArray();
         JSONArray leaveResult = new JSONArray();
 
@@ -78,12 +80,12 @@ public class API_Clock {
         JSONObject result = new JSONObject();
         result.put("clock", clockResult);
         result.put("leave", leaveResult);
-        return result.toString();
+        return ResponseEntity.ok(result.toString());
     }
 
     //取得打卡紀錄
     @GetMapping("/clock")
-    public String getClock(String start, String end) throws ParseException {
+    public ResponseEntity<String> getClock(String start, String end) throws ParseException {
 //        Page<ClockTime> pageResult = clockTimeDAO.findAll(PageRequest.of(0, 10, Sort.by("clockDate").ascending()));
         SimpleDateFormat converter = new SimpleDateFormat("yyyy/MM/dd");
         long dateStart = converter.parse(start).getTime();
@@ -151,7 +153,7 @@ public class API_Clock {
         }
 
 
-        return resultArr.toString();
+        return ResponseEntity.ok(resultArr.toString());
     }
 
     //檔案範本
@@ -218,7 +220,7 @@ public class API_Clock {
 
     //打卡紀錄上傳
     @PostMapping("/fileUpload")
-    public String uploadFile(@RequestParam("fileUpload") MultipartFile multipart, Boolean send) throws IOException {
+    public ResponseEntity<String> uploadFile(@RequestParam("fileUpload") MultipartFile multipart, Boolean send) throws IOException {
         Workbook workbook = new XSSFWorkbook(multipart.getInputStream());
         Sheet sheet = workbook.getSheetAt(0);
         int totalDataRow = sheet.getLastRowNum();
@@ -288,7 +290,7 @@ public class API_Clock {
         result.put("totalData", totalDataRow);
         result.put("success", successDataRow);
         result.put("result", datas);
-        return result.toString();
+        return ResponseEntity.ok(result.toString());
     }
 
     //excel資料轉譯
@@ -312,36 +314,19 @@ public class API_Clock {
     //打卡比對
     @Transactional
     @GetMapping("/compareClock")
-    public String compareClock(String end, String start) throws ParseException {
-        SimpleDateFormat converter = new SimpleDateFormat("yyyy/MM/dd HH:mm");
-        Timestamp timeStart = new Timestamp(converter.parse(start + " 00:00").getTime());
-        Timestamp timeEnd = new Timestamp(converter.parse(end + " 24:00").getTime());
+    public ResponseEntity<String> compareClock(String end, String start) throws ParseException {
+        SimpleDateFormat converter1 = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         SimpleDateFormat converter2 = new SimpleDateFormat("yyyy/MM/dd");
+        Timestamp timeStart = new Timestamp(converter1.parse(start + " 00:00").getTime());
+        Timestamp timeEnd = new Timestamp(converter1.parse(end + " 24:00").getTime());
         List<ClockRaw> rawList = clockRawDAO.findByTimeBetweenOrderByEmpNoAscTimeAsc(timeStart, timeEnd);
 
         //取得員工編號清單
-        Set<Integer> empNoList = new HashSet<>();
-        for (ClockRaw clockRaw : rawList) {
-            empNoList.add(clockRaw.getEmpNo());
-        }
-
-        for (int empNo : empNoList) {
-            Map<String, List<ClockRaw>> timeMap = new HashMap<>();
-            for (ClockRaw clockRaw : rawList) {
-                if (clockRaw.getEmpNo() == empNo) {
-                    //找出相同日期的存在一起
-                    Timestamp timeFromData = clockRaw.getTime();
-                    String date = converter2.format(new java.util.Date(timeFromData.getTime()));
-
-                    if (!timeMap.containsKey(date)) {
-                        List<ClockRaw> temp = new ArrayList<>();
-                        temp.add(clockRaw);
-                        timeMap.put(date, temp);
-                    } else {
-                        timeMap.get(date).add(clockRaw);
-                    }
-                }
-            }
+        Map<Integer, List<ClockRaw>> EmpnoMap = rawList.stream().collect(Collectors.groupingBy(ClockRaw::getEmpNo));
+        for (int empNo : EmpnoMap.keySet()) {
+            //取得每個日期的打卡紀錄清單
+            Map<String, List<ClockRaw>> timeMap = EmpnoMap.get(empNo).stream()
+                    .collect(Collectors.groupingBy(clockRaw -> converter2.format(new java.util.Date(clockRaw.getTime().getTime()))));
             //更新資料庫資料
             for (String belongDate : timeMap.keySet()) {
                 //先刪舊資料
@@ -351,8 +336,8 @@ public class API_Clock {
                 List<ClockRaw> eachDateList = timeMap.get(belongDate);
                 ClockTime clockTime = new ClockTime(0, new Date(converter2.parse(belongDate).getTime()), empNo, null, null, null, null, null);
                 if (eachDateList.size() == 1) { //日期只有一筆資料
-                    long workStart = converter.parse(belongDate + " 09:00").getTime();
-                    long workEnd = converter.parse(belongDate + " 18:00").getTime();
+                    long workStart = converter1.parse(belongDate + " 09:00").getTime();
+                    long workEnd = converter1.parse(belongDate + " 18:00").getTime();
                     long compareDate = eachDateList.get(0).getTime().getTime();
 
                     if (Math.abs(workStart - compareDate) <= Math.abs(workEnd - compareDate)) {
@@ -369,6 +354,7 @@ public class API_Clock {
                     clockTime.setStartId(eachDateList.get(0).getId());
                     clockTime.setEndTime(eachDateList.get(eachDateList.size() - 1).getTime());
                     clockTime.setEndId(eachDateList.get(eachDateList.size() - 1).getId());
+
                     //比對上班時間是否異常
                     long startTime = clockTime.getStartTime().getTime();
                     long endTime = clockTime.getEndTime().getTime();
@@ -391,9 +377,9 @@ public class API_Clock {
                     }
 
                     if (workingTime >= 8) { //上班時間有八小時
-                        clockTime.setStatus(Constant.NORMAL); //正常
+                        clockTime.setStatus(Constant.NORMAL);
                     } else {
-                        clockTime.setStatus(Constant.UNNORMAL); //異常
+                        clockTime.setStatus(Constant.UNNORMAL);
                     }
 
 
@@ -402,17 +388,17 @@ public class API_Clock {
             }
         }
 
-        return "success";
+        return ResponseEntity.ok("{\"status\":\"success!\"}");
     }
 
     @PostMapping("/clockRaw")
-    public ClockRaw createClockTime(int empNo, String time) throws ParseException {
+    public ResponseEntity<ClockRaw> createClockTime(int empNo, String time) throws ParseException {
         ClockRaw clockRaw = new ClockRaw(0, new Timestamp(new SimpleDateFormat("yyyy-MM-dd HH:mm").parse(time).getTime()), empNo);
-        return clockRawDAO.save(clockRaw);
+        return ResponseEntity.ok(clockRawDAO.save(clockRaw));
     }
 
     @DeleteMapping("/clockRaw")
-    public String deleteEmployee(int id) {
+    public ResponseEntity<String> deleteEmployee(int id) {
         clockRawDAO.deleteById(id);
 
         //將clockTime的相關資料作刪除
@@ -431,6 +417,6 @@ public class API_Clock {
             clockTime.setStatus(Constant.UNNORMAL);
             clockTimeDAO.save(clockTime);
         }
-        return "{\"delete\":\"success!\"}";
+        return ResponseEntity.ok("{\"delete\":\"success!\"}");
     }
 }

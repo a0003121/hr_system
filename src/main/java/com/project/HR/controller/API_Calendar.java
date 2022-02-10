@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +24,7 @@ public class API_Calendar {
 
     ////////// *行事曆*///////////
     @GetMapping("/calendars")
-    public String getCalendarbyYearAndType(String year) throws ParseException {
+    public ResponseEntity getCalendarbyYearAndType(String year) throws ParseException {
         SimpleDateFormat converter = new SimpleDateFormat("yyyyMMdd");
         Date dateStart = converter.parse(year + "0101");
         Date dateEnd = converter.parse(year + "1231");
@@ -46,16 +47,16 @@ public class API_Calendar {
             jsonArray.put(obj);
         }
 
-        return jsonArray.toString();
+        return ResponseEntity.ok(jsonArray.toString());
     }
 
     @PutMapping("/calendar")
-    public Calendar updateCalendar(String id, int type, String note) throws ParseException {
+    public ResponseEntity<Calendar> updateCalendar(String id, int type, String note) throws ParseException {
         Calendar calendar = calendarDAO.findById(Integer.parseInt(id)).get();
         System.out.println(type);
         calendar.setType(type);
         calendar.setNote(note);
-        return calendarDAO.save(calendar);
+        return ResponseEntity.ok(calendarDAO.save(calendar));
     }
 
 }
