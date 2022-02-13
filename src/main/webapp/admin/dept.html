@@ -31,7 +31,7 @@
 				<tr>
 					<th></th>
 					<th>部門</th>
-					<td></td>
+					<th>主管</th>
 					<td></td>
 				</tr>
 			</thead>
@@ -44,6 +44,11 @@
 				<span class="input-group-text">部門名稱</span>
 				<input type="text" class="form-control" name="update_deptName">
 			</div>
+			<div class="input-group mb-3 col">
+				<span class="input-group-text">主管編號/姓名</span>
+				<input class="form-control" list="datalistOptions" name="new_empNo" placeholder="請選擇">
+				<datalist id="datalistOptions"></datalist>
+			</div>
 			<button class="update btn btn-outline-primary float-end" id="update_cancel">取消</button>
 			<button class="update btn btn-outline-primary float-end" id="update_confirm">確定修改</button>
 		</div>
@@ -53,9 +58,20 @@
 	<script src='vendors\tablesort-5.3.0\tablesort.js'></script>
 	<script src="public/util.js"></script>
 	<script>
-		var temp_id;
+		var temp_id, temp_empNo;
+		var employee_list = {};
 		$("#header").load("/backheader");
 		$(function () {
+			employee_list = getEmployeeList();
+			console.log(employee_list);
+			for (item in employee_list) {
+                $("datalist#datalistOptions").append(`<option>${item} &nbsp;${employee_list[item]["name"]}</option>`);
+            }
+			//選取員工
+			$("input[name='new_empNo']").on("change", function () {
+				temp_empNo = $(this).val().substring(0, $(this).val().indexOf(" "));
+			});
+			
 			init();
 
 			//https://tristen.ca/tablesort/demo/
@@ -74,9 +90,11 @@
 				success: function (data) {
 					console.log("All Dept Data: ", data);
 					for (item in data) {
+						let mg = data[item]["mgEmpNo"];
 						$("#dept_list").append(`<tr>
 													<td></td>
 													<td id="${data[item]["id"]}">${data[item]["name"]}</td>
+													<td>${mg?mg + " " + employee_list[mg]["name"]:"無"}</td>
 													<td>
 														<button class="update btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-edit"></i></button>
 														<button class="delete btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-trash-alt"></i></button>
@@ -90,7 +108,8 @@
 			//修改按鈕
 			$("#update_confirm").on("click", function () {
 				let name = $("input[name='update_deptName']").val();
-
+				console.log($("input[name='new_empNo]").val());
+				// let empNo = $("input[name='new_empNo]").val().split(" ")[0];
 				if (name.trim() == "") {
 					Swal.fire({
 						icon: 'error',
@@ -105,6 +124,7 @@
 						data: {
 							"id": temp_id,
 							"name": name,
+							"empNo": temp_empNo,
 							"_csrf": csrf()
 						},
 						dataType: "json",
@@ -128,7 +148,12 @@
 			$("main").on("click", "button.update", function () {
 				temp_id = $(this).attr("data-id");
 				let name = $("td#" + temp_id).text();
-				$("input[name='update_deptName']").val($("td#" + temp_id).text());
+				let empNo = $("td#" + temp_id).next().text();
+				if(empNo == "無"){
+					empNo = "";
+				}
+				$("input[name='update_deptName']").val(name);
+				$("input[name='new_empNo']").val(empNo);
 				$("div#update_pop").show();
 			})
 

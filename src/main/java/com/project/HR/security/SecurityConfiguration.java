@@ -19,7 +19,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         http  
         .authorizeRequests()
         .antMatchers("/admin/**").hasAuthority("ADMIN")
-//        .antMatchers("/user/**").hasRole("USER")
+        .antMatchers("/user/**").hasRole("USER")
         .antMatchers( "/public/**").permitAll()  //making the public directory on the classpath root available without authentication
         .anyRequest().authenticated()  
             .and()  

@@ -33,9 +33,8 @@
 					<th>姓名</th>
 					<th>假別</th>
 					<th>日期</th>
-					<th>開始日期</th>
-					<th>結束日期</th>
 					<th>時數</th>
+					<th>狀態</th>
 					<td></td>
 				</tr>
 			</thead>
@@ -125,6 +124,10 @@
 					<input class="form-control" name="update_day" disabled>
 				</div>
 			</div>
+			<div class="input-group mb-3">
+				<span class="input-group-text">狀態</span>
+				<input class="form-control" name="update_status" disabled>
+			</div>
 			<button class="update btn btn-outline-primary float-end newBtn" id="update_cancel">取消</button>
 			<button class="update btn btn-outline-primary float-end newBtn" id="update_confirm">確定</button>
 		</div>
@@ -171,23 +174,13 @@
 			$("th.prev>span.glyphicon").addClass('fas fa-arrow-left');
 			$("th.next>span.glyphicon").addClass('fas fa-arrow-right');
 			//取得員工資料
-			$.ajax({
-				url: "http://localhost:8080/employees",
-				type: "GET",
-				async: false,
-				dataType: "json",
-				success: function (data) {
-					for (item in data) {
-						$("datalist#datalistOptions").append(`<option>${data[item]["empNo"]} &nbsp;${data[item]["name"]}</option>`);
-						employee_list[data[item]["empNo"]] = data[item];
-					}
-					// console.log(employee_list);
-				}
-			});
+			employee_list = getEmployeeList();
 
 			//取得請假資料
 			getLeaveData();
-
+			for (item in employee_list) {
+                $("datalist#datalistOptions").append(`<option>${item} &nbsp;${employee_list[item]["name"]}</option>`);
+            }
 			//取得假別
 			$.ajax({
 				url: "http://localhost:8080/leaves",
@@ -221,6 +214,7 @@
 						"date": $("input[name='new_date']").val(),
 						"startTime": Date.parse($("input[name='new_startDate']").val()),
 						"endTime": Date.parse($("input[name='new_endDate']").val()),
+						"status":0,
 						"_csrf": csrf()
 					},
 					dataType: "json",
@@ -317,6 +311,7 @@
 						$("input[name='update_startDate']").val(data["startTime"].substring(0, 16));
 						$("input[name='update_endDate']").val(data["endTime"].substring(0, 16));
 						$("input[name='update_day']").val(data["hours"]);
+						$("input[name='update_status']").val(data["status"]);
 						$("select[name='update_type'] option").attr("selected", false);
 						$("select[name='update_type'] option[value='" + data["leaveId"] + "']").attr("selected", true);
 					}
@@ -444,8 +439,6 @@
 					$("#leave_list").html("");
 					let html = "";
 					for (item in data) {
-						let startDate = data[item]["startTime"].split('.')[0];
-						let endDate = data[item]["endTime"].split('.')[0];
 						let empNo = data[item]["employeeId"];
 						html += `<tr>
 									<td></td>
@@ -454,9 +447,8 @@
 									<td>${employee_list[empNo]["name"]}</td>
 									<td>${data[item]["leave"]["name"]}</td>
 									<td>${data[item]["leaveDate"].split(' ')[0]}</td>
-									<td>${startDate}</td>
-									<td>${endDate}</td>
 									<td>${data[item]["hours"]}</td>
+									<td>${data[item]["status"]}</td>
 									<td>
 										<button class="delete btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-trash-alt"></i></button>
 										<button class="update btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-edit"></i></button>

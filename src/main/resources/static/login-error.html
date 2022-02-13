@@ -1,180 +1,357 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Login page</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+	<meta charset="UTF-8">
+	<title>Login Error</title>
+	<style>
+		*,
+		*::after,
+		*::before {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			user-select: none;
+		}
+
+		/* Generic */
+		body {
+			width: 100%;
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			font-family: "Montserrat", sans-serif;
+			font-size: 12px;
+			background-color: #ecf0f3;
+			color: #a0a5a8;
+		}
+
+		/**/
+		.main {
+			position: relative;
+			width: 1000px;
+			min-width: 1000px;
+			min-height: 600px;
+			height: 600px;
+			padding: 25px;
+			background-color: #ecf0f3;
+			box-shadow: 10px 10px 10px #d1d9e6, -10px -10px 10px #f9f9f9;
+			border-radius: 12px;
+			overflow: hidden;
+		}
+
+		@media (max-width: 1200px) {
+			.main {
+				transform: scale(0.7);
+			}
+		}
+
+		@media (max-width: 1000px) {
+			.main {
+				transform: scale(0.6);
+			}
+		}
+
+		@media (max-width: 800px) {
+			.main {
+				transform: scale(0.5);
+			}
+		}
+
+		@media (max-width: 600px) {
+			.main {
+				transform: scale(0.4);
+			}
+		}
+
+		.container {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			position: absolute;
+			top: 0;
+			width: 600px;
+			height: 100%;
+			padding: 25px;
+			background-color: #ecf0f3;
+			transition: 1.25s;
+		}
+
+		.form {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+			width: 100%;
+			height: 100%;
+		}
+
+
+		.form__input {
+			width: 350px;
+			height: 40px;
+			margin: 4px 0;
+			padding-left: 25px;
+			font-size: 13px;
+			letter-spacing: 0.15px;
+			border: none;
+			outline: none;
+			font-family: "Montserrat", sans-serif;
+			background-color: #ecf0f3;
+			transition: 0.25s ease;
+			border-radius: 8px;
+			box-shadow: inset 2px 2px 4px #d1d9e6, inset -2px -2px 4px #f9f9f9;
+		}
+
+		.form__input:focus {
+			box-shadow: inset 4px 4px 4px #d1d9e6, inset -4px -4px 4px #f9f9f9;
+		}
+
+		.form__span {
+			margin-top: 30px;
+			margin-bottom: 12px;
+		}
+
+		.form__link {
+			color: #181818;
+			font-size: 15px;
+			margin-top: 25px;
+			border-bottom: 1px solid #a0a5a8;
+			line-height: 2;
+		}
+
+		.title {
+			font-size: 34px;
+			font-weight: 700;
+			line-height: 3;
+			color: #181818;
+		}
+
+		.description {
+			font-size: 14px;
+			letter-spacing: 0.25px;
+			text-align: center;
+			line-height: 1.6;
+			color: black;
+		}
+
+		.button {
+			width: 180px;
+			height: 50px;
+			border-radius: 25px;
+			margin-top: 50px;
+			font-weight: 700;
+			font-size: 14px;
+			letter-spacing: 1.15px;
+			background-color: #4B70E2;
+			color: #f9f9f9;
+			box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #f9f9f9;
+			border: none;
+			outline: none;
+		}
+
+		/**/
+		.a-container {
+			z-index: 100;
+			left: calc(100% - 600px);
+			background-size: cover;
+			background-image: url('https://img.freepik.com/free-photo/hand-painted-watercolor-background-with-sky-clouds-shape_24972-1095.jpg?size=626&ext=jpg&ga=GA1.2.1519603221.1641686400');
+		}
+
+		.b-container {
+			left: calc(100% - 600px);
+			z-index: 0;
+			background-size: cover;
+			background-image: url('https://img.freepik.com/free-photo/hand-painted-watercolor-background-with-sky-clouds-shape_24972-1095.jpg?size=626&ext=jpg&ga=GA1.2.1519603221.1641686400');
+		}
+
+		.switch {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			width: 400px;
+			padding: 50px;
+			z-index: 200;
+			transition: 1.25s;
+			background-color: #ecf0f3;
+			overflow: hidden;
+			box-shadow: 4px 4px 10px #d1d9e6, -4px -4px 10px #f9f9f9;
+		}
+
+
+		.switch__container {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			flex-direction: column;
+			position: absolute;
+			width: 400px;
+			padding: 50px 55px;
+			transition: 1.25s;
+		}
+
+		.switch__button {
+			cursor: pointer;
+		}
+
+		.switch__button:hover {
+			box-shadow: 6px 6px 10px #d1d9e6, -6px -6px 10px #f9f9f9;
+			transform: scale(0.985);
+			transition: 0.25s;
+		}
+
+		.switch__button:active,
+		.switch__button:focus {
+			box-shadow: 2px 2px 6px #d1d9e6, -2px -2px 6px #f9f9f9;
+			transform: scale(0.97);
+			transition: 0.25s;
+		}
+
+		/**/
+		.is-txr {
+			left: calc(100% - 400px);
+			transition: 1.25s;
+			transform-origin: left;
+		}
+
+		.is-txl {
+			left: 0;
+			transition: 1.25s;
+			transform-origin: right;
+		}
+
+		.is-z200 {
+			z-index: 200;
+			transition: 1.25s;
+		}
+
+		.is-hidden {
+			visibility: hidden;
+			opacity: 0;
+			position: absolute;
+			transition: 1.25s;
+		}
+
+		.is-gx {
+			animation: is-gx 1.25s;
+		}
+
+		@keyframes is-gx {
+
+			0%,
+			10%,
+			100% {
+				width: 400px;
+			}
+
+			30%,
+			50% {
+				width: 500px;
+			}
+		}
+
+		#switch-cnt {
+			background-size: cover;
+			background-image: url('https://media.istockphoto.com/photos/blue-background-picture-id157571423?k=20&m=157571423&s=170667a&w=0&h=caMcmHnt3_3bDZ7rQYrPsRi4nKi-bdvaD7IjGFpNH2w=');
+		}
+	</style>
 </head>
-<style>
-    body {
-        background: #97d1d3;
-        font-family: 'Roboto', sans-serif;
-    }
-
-    .login-box {
-        margin-top: 75px;
-        height: auto;
-        background: #2d3e3f;
-        text-align: center;
-        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-    }
-
-    .login-key {
-        height: 100px;
-        font-size: 80px;
-        line-height: 100px;
-        background: -webkit-linear-gradient(#27EF9F, #0DB8DE);
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .login-title {
-        margin-top: 15px;
-        text-align: center;
-        font-size: 30px;
-        letter-spacing: 2px;
-        margin-top: 15px;
-        font-weight: bold;
-        color: #ECF0F5;
-    }
-
-    .login-form {
-        margin-top: 25px;
-        text-align: left;
-    }
-
-    input[type=text] {
-        background-color: #1A2226;
-        border: none;
-        border-bottom: 2px solid #0DB8DE;
-        border-top: 0px;
-        border-radius: 0px;
-        font-weight: bold;
-        outline: 0;
-        margin-bottom: 20px;
-        padding-left: 10px;
-        color: #ECF0F5;
-    }
-
-    input[type=password] {
-        background-color: #1A2226;
-        border: none;
-        border-bottom: 2px solid #0DB8DE;
-        border-top: 0px;
-        border-radius: 0px;
-        font-weight: bold;
-        outline: 0;
-        padding-left: 10px;
-        margin-bottom: 20px;
-        color: #ECF0F5;
-    }
-
-    .form-group {
-        margin-bottom: 40px;
-        outline: 0px;
-    }
-
-    .form-control:focus {
-        border-color: inherit;
-        -webkit-box-shadow: none;
-        box-shadow: none;
-        border-bottom: 2px solid #0DB8DE;
-        outline: 0;
-        background-color: #1A2226;
-        color: #ECF0F5;
-    }
-
-    input:focus {
-        outline: none;
-        box-shadow: 0 0 0;
-    }
-
-    label {
-        margin-bottom: 0px;
-    }
-
-    .form-control-label {
-        font-size: 10px;
-        color: #a5a5a5;
-        font-weight: bold;
-        letter-spacing: 1px;
-    }
-
-    .btn-outline-primary {
-        border-color: #0DB8DE;
-        color: #0DB8DE;
-        border-radius: 0px;
-        font-weight: bold;
-        letter-spacing: 1px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
-    }
-
-    .btn-outline-primary:hover {
-        background-color: #0DB8DE;
-        right: 0px;
-    }
-
-    .login-button {
-        padding-right: 0px;
-        text-align: center;
-        margin-bottom: 25px;
-    }
-</style>
 
 <body>
-    <div id="container">
+	<!DOCTYPE html>
+	<html lang="es" dir="ltr">
 
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3 col-md-2"></div>
-                <div class="col-lg-6 col-md-8 login-box">
-                    <div class="col-lg-12 login-key">
-                        <i class="fa fa-key" aria-hidden="true"></i>
-                    </div>
-                    <div class="col-lg-12 login-title">
-                        PLEASE LOGIN!
-                    </div>
-                    <div class="col-lg-12" style="color:red">
-                        登入失敗!請重新登入
-                    </div>
+	<head>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<meta charset="utf-8">
+		<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet">
+	</head>
 
-                    <div class="col-lg-12 login-form">
-                        <div class="col-lg-12 login-form">
-                            <form action="login" method="post">
-                                <input id="csrf" type="hidden" name="_csrf" value="${_csrf.token}" />
+	<body>
+		<div class="main">
+			<div class="container a-container" id="a-container">
+				<form class="form" id="b-form" action="login" method="post">
+					<h2 class="form_title title">會員登入</h2>
+					<div class="col-lg-12" style="color:red">登入失敗!請重新登入</div>
+					<span class="form__span">請輸入Email和密碼登入</span>
+					<input class="form__input" type="text" name="username" placeholder="Email">
+					<input class="form__input" type="password" name="password" placeholder="Password"><a
+						class="form__link">忘記密碼?</a>
+					<input id="csrf" type="hidden" name="_csrf" value="${_csrf.token}" />
+					<button class="form__button button submit" id="logBtn">登入</button>
 
-                                <div class="form-group">
-                                    <label class="form-control-label">USERNAME</label>
-                                    <input type="text" name="username" class="form-control">
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-control-label">PASSWORD</label>
-                                    <input type="password" name="password" class="form-control" i>
-                                </div>
+				</form>
+			</div>
+			<div class="container b-container" id="b-container">
+				<form class="form" id="a-form" method="" action="">
+					<h2 class="form_title title">註冊帳戶</h2>
+					<span class="form__span">請輸入公司郵件帳號</span>
+					<input class="form__input" type="text" placeholder="Email">
+					<button class="form__button button submit">註冊</button>
+				</form>
+			</div>
+			<div class="switch" id="switch-cnt">
+				<div class="switch__container" id="switch-c1">
+					<h2 class="switch__title title">Hello Friend !</h2>
+					<p class="switch__description description">第一次來嗎?</p>
+					<button class="switch__button button switch-btn">註冊</button>
+				</div>
+				<div class="switch__container is-hidden" id="switch-c2">
+					<h2 class="switch__title title">Welcome Back !</h2>
+					<p class="switch__description description">已經註冊過了嗎?</p>
+					<button class="switch__button button switch-btn">登入</button>
+				</div>
+			</div>
+		</div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+		<script src="public/util.js"></script>
+		<script>
+			let switchCtn = document.querySelector("#switch-cnt");
+			let switchC1 = document.querySelector("#switch-c1");
+			let switchC2 = document.querySelector("#switch-c2");
+			let switchBtn = document.querySelectorAll(".switch-btn");
+			let aContainer = document.querySelector("#a-container");
+			let bContainer = document.querySelector("#b-container");
+			let allButtons = document.querySelectorAll(".submit");
 
-                                <div class="col-lg-12 login-btm login-button">
-                                    <button type="submit" class="btn btn-outline-primary">LOGIN</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    <div class="col-lg-3 col-md-2"></div>
-                </div>
-            </div>
+			let changeForm = (e) => {
 
+				switchCtn.classList.add("is-gx");
+				setTimeout(function () {
+					switchCtn.classList.remove("is-gx");
+				}, 1500)
 
+				switchCtn.classList.toggle("is-txr");
 
+				switchC1.classList.toggle("is-hidden");
+				switchC2.classList.toggle("is-hidden");
+				aContainer.classList.toggle("is-txl");
+				bContainer.classList.toggle("is-txl");
+				bContainer.classList.toggle("is-z200");
+			}
 
+			let mainF = (e) => {
+				for (var i = 0; i < switchBtn.length; i++)
+					switchBtn[i].addEventListener("click", changeForm)
+			}
 
-        </div>
+			window.addEventListener("load", mainF);
 
-        <script src="public/util.js"></script>
-        <script>
-            document.getElementById("csrf").value = csrf();
-        </script>
-</body>
+			$(function () {
+				document.getElementById("csrf").value = csrf();
+				// $("#logBtn").click();
+				$("#logBtn").on("click", function () {
+					console.log("All");
+				})
+				console.log("All");
+			});
+		</script>
 
-</html>
+	</body>
+
+	</html>

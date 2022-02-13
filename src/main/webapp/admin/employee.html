@@ -14,6 +14,10 @@
 		button.update {
 			margin-right: 10px;
 		}
+
+		.required{
+			background: #ffbdbd !important;
+		}
 	</style>
 </head>
 
@@ -80,17 +84,17 @@
 		<div class="popup_content">
 			<div class="row">
 				<div class="input-group mb-3 col">
-					<span class="input-group-text">員工編號</span>
+					<span class="required input-group-text">員工編號</span>
 					<input type="text" class="form-control" name="update_id">
 				</div>
 				<div class="input-group mb-3 col">
-					<span class="input-group-text">姓名</span>
+					<span class="required input-group-text">姓名</span>
 					<input type="text" class="form-control" name="update_name">
 				</div>
 			</div>
 
 			<div class="input-group mb-3">
-				<span class="input-group-text">狀態</span>
+				<span class="required input-group-text">狀態</span>
 				<select class="form-select" name="update_status" id="update_status">
 					<option value="1">未入職</option>
 					<option value="2">在職</option>
@@ -98,7 +102,11 @@
 				</select>
 			</div>
 			<div class="input-group mb-3">
-				<span class="input-group-text">到職日</span>
+				<span class="required input-group-text">Email</span>
+				<input type="text" class="form-control" name="update_email">
+			</div>
+			<div class="input-group mb-3">
+				<span class="required input-group-text">到職日</span>
 				<input type="date" class="form-control" name="update_hire_date">
 			</div>
 			<div class="input-group mb-3">
@@ -107,11 +115,11 @@
 			</div>
 			<div class="row">
 				<div class="input-group mb-3 col">
-					<span class="input-group-text">部門</span>
+					<span class="required input-group-text">部門</span>
 					<select class="form-select" name="dept_update" id="update_dept"></select>
 				</div>
 				<div class="input-group mb-3 col">
-					<span class="input-group-text">職位</span>
+					<span class="required input-group-text">職位</span>
 					<select class="form-select" name="position_update" id="update_position"></select>
 				</div>
 			</div>
@@ -128,7 +136,7 @@
 	<div class="popup_bg" id="new_pop" style="display: none">
 		<div class="popup_content">
 			<div class="input-group mb-3">
-				<span class="input-group-text">狀態</span>
+				<span class="required input-group-text">狀態</span>
 				<select class="form-select" name="status" id="status">
 					<option value="1">未入職</option>
 					<option value="2">在職</option>
@@ -137,16 +145,20 @@
 			</div>
 			<div class="row">
 				<div class="input-group mb-3 col">
-					<span class="input-group-text">員工編號</span>
+					<span class="required input-group-text">員工編號</span>
 					<input type="text" class="form-control" name="empNo">
 				</div>
 				<div class="input-group mb-3 col">
-					<span class="input-group-text">姓名</span>
+					<span class="required input-group-text">姓名</span>
 					<input type="text" class="form-control" name="name">
 				</div>
 			</div>
 			<div class="input-group mb-3">
-				<span class="input-group-text">到職日</span>
+				<span class="required input-group-text">Email</span>
+				<input type="text" class="form-control" name="email">
+			</div>
+			<div class="input-group mb-3">
+				<span class="required input-group-text">到職日</span>
 				<input type="date" class="form-control" name="hire_date" id="date">
 			</div>
 			<div class="input-group mb-3">
@@ -155,11 +167,11 @@
 			</div>
 			<div class="row">
 				<div class="input-group mb-3 col">
-					<span class="input-group-text">部門</span>
+					<span class="required input-group-text">部門</span>
 					<select class="form-select" name="dept" id="dept"></select>
 				</div>
 				<div class="input-group mb-3 col">
-					<span class="input-group-text">職位</span>
+					<span class="required input-group-text">職位</span>
 					<select class="form-select" name="position" id="position"></select>
 				</div>
 			</div>

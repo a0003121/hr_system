@@ -34,10 +34,11 @@ public class API_Dept {
 	}
 	
 	@PutMapping("/dept")
-	public ResponseEntity<Dept> updateDept(int id, String name) {
+	public ResponseEntity<Dept> updateDept(int id, String name, Integer empNo) {
 		Dept dept = new Dept();
 		dept.setId(id);
 		dept.setName(name);
+		dept.setMgEmpNo(empNo);
 		return ResponseEntity.ok(deptDAO.save(dept));
 	}
 	

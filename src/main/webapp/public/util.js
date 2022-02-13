@@ -73,3 +73,22 @@ function reorderPage(items) {
         $(item).attr("data-page", Math.floor(index / 20) + 1);
     });
 }
+
+function getEmployeeList() {
+    let employee_list = {};
+    //取得員工資料
+    $.ajax({
+        url: "http://localhost:8080/employees",
+        type: "GET",
+        async: false,
+        dataType: "json",
+        success: function (data) {
+            for (item in data) {
+                employee_list[data[item]["empNo"]] = data[item];
+            }
+            // console.log(employee_list);
+        }
+    });
+
+    return employee_list;
+}

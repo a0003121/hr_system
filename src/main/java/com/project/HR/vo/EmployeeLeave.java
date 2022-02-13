@@ -45,6 +45,7 @@ public class EmployeeLeave {
 	Timestamp endTime;
 	
 	Float hours;
+	Integer status;
 	
 	@ManyToOne
 	@JoinColumn(name = "leave_id", insertable = false, updatable = false)

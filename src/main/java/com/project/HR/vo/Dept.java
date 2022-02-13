@@ -32,6 +32,9 @@ public class Dept {
 	
 	@Column(name = "dept_name")
 	String name;
+
+	@Column(name = "mg_empno")
+	Integer MgEmpNo;
 	
 	@OneToMany(mappedBy = "deptName")
 //	@JsonManagedReference

@@ -2,7 +2,9 @@ package com.project.HR.controller;
 
 import com.project.HR.dao.EmployeeLeaveDAO;
 import com.project.HR.service.LeaveService;
+import com.project.HR.util.Constant;
 import com.project.HR.vo.EmployeeLeave;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,17 +27,35 @@ public class API_EmployeeLeave {
 
     ////////// *員工休假*///////////
     @GetMapping("/employeeLeaves")
-    public  ResponseEntity<List<EmployeeLeave>> getAllEmployeeLeaves() {
-        return ResponseEntity.ok(employeeLeaveDAO.findAll());
+    public  ResponseEntity<String> getAllEmployeeLeaves() {
+        List<EmployeeLeave> list = employeeLeaveDAO.findAll();
+        JSONArray jsonArray = new JSONArray();
+        for (EmployeeLeave employeeLeave : list) {
+            JSONObject object = new JSONObject(employeeLeave);
+            switch (employeeLeave.getStatus()) {
+                case Constant.LEAVE_HRADD -> object.put("status", "系統新增");
+                case Constant.LEAVE_UNCOMPLETE -> object.put("status", "未完成");
+                case Constant.LEAVE_COMPLETED -> object.put("status", "已完成");
+            }
+            jsonArray.put(object);
+        }
+        return ResponseEntity.ok(jsonArray.toString());
     }
 
     @GetMapping("/employeeLeave")
-    public  ResponseEntity<EmployeeLeave> getOneEmployeeLeave(String id) {
-        return ResponseEntity.ok(employeeLeaveDAO.findById(Integer.parseInt(id)).get());
+    public  ResponseEntity<String> getOneEmployeeLeave(String id) {
+        EmployeeLeave employeeLeave = employeeLeaveDAO.findById(Integer.parseInt(id)).get();
+        JSONObject object = new JSONObject(employeeLeave);
+        switch (employeeLeave.getStatus()) {
+            case Constant.LEAVE_HRADD -> object.put("status", "系統新增");
+            case Constant.LEAVE_UNCOMPLETE -> object.put("status", "未完成");
+            case Constant.LEAVE_COMPLETED -> object.put("status", "已完成");
+        }
+        return ResponseEntity.ok(object.toString());
     }
 
     @PostMapping("/employeeLeave")
-    public  ResponseEntity<String> createEmployeeLeave(int employeeId, int leaveId, String date, float hours, long startTime, long endTime) throws ParseException {
+    public  ResponseEntity<String> createEmployeeLeave(int status, int employeeId, int leaveId, String date, float hours, long startTime, long endTime) throws ParseException {
         //檢查有沒有重複
         List<EmployeeLeave> checkList = employeeLeaveDAO.findByEmployeeIdAndLeaveDate(employeeId, new SimpleDateFormat("yyyy-MM-dd").parse(date));
         for(EmployeeLeave employeeLeave:checkList){
@@ -54,6 +74,7 @@ public class API_EmployeeLeave {
         employeeLeave.setEmployeeId(employeeId);
         employeeLeave.setLeaveId(leaveId);
         employeeLeave.setHours(hours);
+        employeeLeave.setStatus(status);
         employeeLeave.setLeaveDate(new SimpleDateFormat("yyyy-MM-dd").parse(date));
         employeeLeave.setStartTime(new Timestamp(startTime));
         employeeLeave.setEndTime(new Timestamp(endTime));
