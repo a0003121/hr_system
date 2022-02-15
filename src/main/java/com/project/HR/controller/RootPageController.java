@@ -21,9 +21,14 @@ public class RootPageController {
     @RequestMapping("/login-error")  
     public String loginError() {  
         return "login-error";  
-    } 
-    
-	@GetMapping("/role")
+    }
+
+    @RequestMapping("/user_index")
+    public String userIndex() {
+        return "/user/index";
+    }
+
+    @GetMapping("/role")
     public String defaultAfterLogin(Authentication authentication) {
      MyUserDetails userDetails = (MyUserDetails) authentication.getPrincipal();
      
@@ -33,6 +38,6 @@ public class RootPageController {
          }
      }
 
-     return "user";
+     return "/user/index";
   }
 }

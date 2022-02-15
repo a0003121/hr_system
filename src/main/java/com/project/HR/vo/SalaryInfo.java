@@ -17,7 +17,8 @@ import java.sql.Timestamp;
 public class SalaryInfo {
 	@Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-	Integer id;
+	@Column(name="info_id")
+	Integer infoId;
 	@Column(name="start_date")
 	Timestamp startDate;
 	@Column(name="end_date")

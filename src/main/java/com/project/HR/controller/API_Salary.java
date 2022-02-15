@@ -58,7 +58,7 @@ public class API_Salary {
         return ResponseEntity.ok("{\"delete\":\"success!\"}");
     }
 
-    //取得薪資計算區間員工名單
+    //薪資計算
     @Transactional
     @GetMapping("/perform_cal")
     public ResponseEntity<SalaryInfo> performCal(Long startDate, Long endDate, @RequestParam(value = "ids[]") String[] ids, String name) {
@@ -97,7 +97,7 @@ public class API_Salary {
             float calculateResult = salary * (daysBetween / 30f) - leaveTotal;
 
             //存入資料
-            SalaryStatistics salaryStatistics = new SalaryStatistics(0, salaryInfo.getId(), employee.getEmpNo(), Math.round(calculateResult));
+            SalaryStatistics salaryStatistics = new SalaryStatistics(0, salaryInfo.getInfoId(), employee.getEmpNo(), Math.round(calculateResult));
             salaryStatisticsDAO.save(salaryStatistics);
         }
         return ResponseEntity.ok(salaryInfo);
