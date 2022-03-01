@@ -23,6 +23,7 @@
 				<tr>
 					<th></th>
 					<th>名稱</th>
+					<th>計算月份</th>
 					<th>開始時間</th>
 					<th>結束時間</th>
 					<td></td>
@@ -38,6 +39,10 @@
 			<div class="input-group mb-3">
 				<span class="input-group-text">計算名稱</span>
 				<input type="text" class="form-control" name="calc_name" id="calc_name">
+			</div>
+			<div class="input-group mb-3 col">
+				<span class="input-group-text">計算月份</span>
+				<input type="text" class="form-control" name="new_calcDate">
 			</div>
 			<div class="row">
 				<div class="col-5">
@@ -88,7 +93,11 @@
 						<th>員工編號</th>
 						<th>部門</th>
 						<th>姓名</th>
-						<th>薪資</th>
+						<th>原薪資</th>
+						<th>請假扣款</th>
+						<th>勞保扣款</th>
+						<th>健保扣款</th>
+						<th>總計</th>
 						<td></td>
 					</tr>
 				</thead>
@@ -96,9 +105,12 @@
 			</table>
 		</div>
 	</div>
-
+	
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<script src="/vendors/datetimepicker/bootstrap-datetimepicker.js"></script>
+	<script src="/vendors/datetimepicker/bootstrap-datetimepicker.zh-TW.js"></script>
+	
 	<script src="public/util.js"></script>
 	<script>
 		var tempStart, tempEnd;
@@ -106,6 +118,21 @@
 		$("#header").load("/backheader");
 
 		$(function () {
+			$('input[name="new_calcDate"]').datetimepicker({
+				language: 'zh-TW',//顯示中文
+				format: 'yyyy-mm',//顯示格式
+				minView: "year",//設定只顯示到月份
+				startView: "year",//設定只顯示到月份
+				initialDate: new Date().toISOString().slice(0, 7),//初始化當前日期
+				autoclose: true,//選中自動關閉
+			});
+
+			$('input[name="new_calcDate"]')
+				.datetimepicker()
+				.on('changeDate', function (ev) {
+					$('input[name="new_calcDate"]').data("datetimepicker").getDate();
+				});
+
 			loadInfoList();
 
 			//取得員工資料
@@ -219,19 +246,21 @@
 					timer: 2000,
 				})
 				return;
-				return;
 			}
+
 			$.ajax({
 				url: "http://localhost:8080/perform_cal",
 				type: "GET",
 				data: {
 					startDate: tempStart,
 					endDate: tempEnd,
+					"calcDate":$("input[name='new_calcDate']").val(),
 					"ids": ids,
 					"name": $("#calc_name").val(),
 				},
 				dataType: "json",
 			}).done(function (data) {
+				console.log(data);
 				Swal.fire({
 					icon: 'success',
 					title: '新增成功!',
@@ -261,7 +290,11 @@
 												<td>${data[item]["empNo"]}</td>
 												<td>${employee_list[data[item]["empNo"]]["deptName"]["name"]}</td>
 												<td>${employee_list[data[item]["empNo"]]["name"]}</td>
-												<td>${data[item]["salary"].toLocaleString()}</td>
+												<td>${data[item]["roughSalary"].toLocaleString()}</td>
+												<td>${data[item]["leaveCount"].toLocaleString()}</td>
+												<td>${data[item]["workInsurance"].toLocaleString()}</td>
+												<td>${data[item]["healthInsurance"].toLocaleString()}</td>
+												<td>${data[item]["salaryResult"].toLocaleString()}</td>
 												<td></td>
 											</tr>`)
 				}
@@ -332,6 +365,7 @@
 			return `<tr>
 						<td></td>
 						<td>${data["name"]}</td>
+						<td>${data["calcDate"]}</td>
 						<td>${data["startDate"].split("T")[0]}</td>
 						<td>${data["endDate"].split("T")[0]}</td>
 						<td>
@@ -353,6 +387,7 @@
 
 		$("#new_btn").on("click", function () {
 			$("#new_pop").show();
+			$("input[name='new_calcDate']").val(new Date().toISOString().slice(0, 7));
 		});
 	</script>
 </body>

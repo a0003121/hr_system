@@ -21,5 +21,14 @@ public class SalaryStatistics {
 	Integer infoId;
 	@Column(name = "emp_no")
 	Integer empNo;
-	Integer salary;
+	@Column(name = "rough_salary")
+	Integer roughSalary;
+	@Column(name = "leave_count")
+	Integer leaveCount;
+	@Column(name = "work_insurance")
+	Integer workInsurance;
+	@Column(name = "health_insurance")
+	Integer healthInsurance;
+	@Column(name = "salary_result")
+	Integer salaryResult;
 }

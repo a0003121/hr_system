@@ -19,6 +19,8 @@ public class SalaryInfo {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="info_id")
 	Integer infoId;
+	@Column(name="calc_date")
+	String calcDate;
 	@Column(name="start_date")
 	Timestamp startDate;
 	@Column(name="end_date")
