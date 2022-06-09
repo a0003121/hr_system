@@ -23,8 +23,8 @@
 	<main>
 		<div class="input-group mb-3">
 			<span class="input-group-text">部門名稱</span>
-			<input type="text" class="form-control" name="newDept">
-			<button class="btn btn-outline-primary" onclick="newDept()">新增</button>
+			<input type="text" class="form-control" v-model="newDeptName">
+			<button class="btn btn-outline-primary" v-on:click="newDept">新增</button>
 		</div>
 		<table class="table table-hover" id="table">
 			<thead>
@@ -42,11 +42,12 @@
 		<div class="popup_content">
 			<div class="input-group mb-3">
 				<span class="input-group-text">部門名稱</span>
-				<input type="text" class="form-control" name="update_deptName">
+				<input type="text" class="form-control" name="update_deptName" v-model="updateDeptName">
 			</div>
 			<div class="input-group mb-3 col">
 				<span class="input-group-text">主管編號/姓名</span>
-				<input class="form-control" list="datalistOptions" name="new_empNo" placeholder="請選擇">
+				<input class="form-control" list="datalistOptions" name="new_empNo" v-model="updateEmpNo"
+					placeholder="請選擇">
 				<datalist id="datalistOptions"></datalist>
 			</div>
 			<button class="update btn btn-outline-primary float-end" id="update_cancel">取消</button>
@@ -56,35 +57,88 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<script src='vendors\tablesort-5.3.0\tablesort.js'></script>
+	<script src="https://unpkg.com/vue@3"></script>
 	<script src="public/util.js"></script>
 	<script>
 		var temp_id, temp_empNo;
 		var employee_list = {};
+		var app;
 		$("#header").load("/backheader");
 		$(function () {
 			employee_list = getEmployeeList();
 			console.log(employee_list);
 			for (item in employee_list) {
-                $("datalist#datalistOptions").append(`<option>${item} &nbsp;${employee_list[item]["name"]}</option>`);
-            }
+				$("datalist#datalistOptions").append(`<option>${item} &nbsp;${employee_list[item]["name"]}</option>`);
+			}
 			//選取員工
 			$("input[name='new_empNo']").on("change", function () {
 				temp_empNo = $(this).val().substring(0, $(this).val().indexOf(" "));
 			});
-			
+
 			init();
 
 			//https://tristen.ca/tablesort/demo/
 			new Tablesort(document.getElementById('table'));
+
+
+			const vm = Vue.createApp({
+				data() {
+					return {
+						newDeptName: '',
+						updateDeptName: '',
+						updateEmpNo: ''
+					}
+				},
+				methods: {
+					newDept(event) {
+						let name = $("input[name='newDept']").val();
+						if (this.newDeptName.trim() == "") {
+							Swal.fire({
+								icon: 'error',
+								title: '不可空白!',
+								text: '',
+								timer: 2000
+							})
+						} else {
+							//新增部門
+							$.ajax({
+								url: window.location.origin + "/dept",
+								type: "POST",
+								data: { "name": this.newDeptName, "_csrf": csrf() },
+								dataType: "json",
+								success: function (data) {
+									console.log("Create Dept: ", data);
+									Swal.fire({
+										icon: 'success',
+										title: '新增成功!',
+										text: '',
+										timer: 2000
+									})
+									$("#dept_list").prepend(`<tr>
+													<td></td>
+													<td id="${data["id"]}">${data["name"]}</td>
+													<td>
+														<button class="update btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-edit"></i></button>
+														<button class="delete btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-trash-alt"></i></button>
+													</td>
+													<td></td>
+												</tr>`);
+
+
+								}
+							});
+						}
+					}
+				}
+			});
+			app = vm.mount('main');
 		});
 
 		//頁面初始加載資料
 		function init() {
-
-
 			//取得部門
 			$.ajax({
-				url: "http://localhost:8080/depts",
+				url: window.location.origin + "/depts",
 				type: "GET",
 				dataType: "json",
 				success: function (data) {
@@ -94,7 +148,7 @@
 						$("#dept_list").append(`<tr>
 													<td></td>
 													<td id="${data[item]["id"]}">${data[item]["name"]}</td>
-													<td>${mg?mg + " " + employee_list[mg]["name"]:"無"}</td>
+													<td>${mg ? mg + " " + employee_list[mg]["name"] : "無"}</td>
 													<td>
 														<button class="update btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-edit"></i></button>
 														<button class="delete btn btn-outline-primary float-end" data-id="${data[item]["id"]}"><i class="fas fa-trash-alt"></i></button>
@@ -119,7 +173,7 @@
 					})
 				} else {
 					$.ajax({
-						url: "http://localhost:8080/dept",
+						url: window.location.origin + "/dept",
 						type: "PUT",
 						data: {
 							"id": temp_id,
@@ -149,7 +203,7 @@
 				temp_id = $(this).attr("data-id");
 				let name = $("td#" + temp_id).text();
 				let empNo = $("td#" + temp_id).next().text();
-				if(empNo == "無"){
+				if (empNo == "無") {
 					empNo = "";
 				}
 				$("input[name='update_deptName']").val(name);
@@ -184,7 +238,7 @@
 				}).then((result) => {
 					if (result.isConfirmed) {
 						$.ajax({
-							url: "http://localhost:8080/dept",
+							url: window.location.origin + "/dept",
 							type: "DELETE",
 							data: {
 								"id": $(this).attr("data-id"),
@@ -210,49 +264,6 @@
 			});
 		}
 
-		//新增按鈕
-		function newDept() {
-			let name = $("input[name='newDept']").val();
-			if (name.trim() == "") {
-				Swal.fire({
-					icon: 'error',
-					title: '不可空白!',
-					text: '',
-					timer: 2000
-				})
-			} else {
-				//新增部門
-				$.ajax({
-					url: "http://localhost:8080/dept",
-					type: "POST",
-					data: {
-						"name": name,
-						"_csrf": csrf()
-					},
-					dataType: "json",
-					success: function (data) {
-						console.log("Create Dept: ", data);
-						Swal.fire({
-							icon: 'success',
-							title: '新增成功!',
-							text: '',
-							timer: 2000
-						})
-						$("#dept_list").prepend(`<tr>
-													<td></td>
-													<td id="${data["id"]}">${data["name"]}</td>
-													<td>
-														<button class="update btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-edit"></i></button>
-														<button class="delete btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-trash-alt"></i></button>
-													</td>
-													<td></td>
-												</tr>`);
-
-
-					}
-				});
-			}
-		}
 
 
 	</script>

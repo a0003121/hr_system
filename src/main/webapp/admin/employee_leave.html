@@ -183,7 +183,7 @@
             }
 			//取得假別
 			$.ajax({
-				url: "http://localhost:8080/leaves",
+				url: window.location.origin + "/leaves",
 				type: "GET",
 				async: false,
 				dataType: "json",
@@ -205,7 +205,7 @@
 			});
 			$("#new_confirm").on("click", function () {
 				$.ajax({
-					url: "http://localhost:8080/employeeLeave",
+					url: window.location.origin + "/employeeLeave",
 					type: "POST",
 					data: {
 						"employeeId": temp_id,
@@ -279,7 +279,7 @@
 
 				//取得假別
 				$.ajax({
-					url: "http://localhost:8080/leaveDays",
+					url: window.location.origin + "/leaveDays",
 					type: "GET",
 					dataType: "json",
 					data: { "startTime": start, "endTime": end },
@@ -299,7 +299,7 @@
 			$("#leave_list").on("click", "button.update", function () {
 				$("#update_pop").show();
 				$.ajax({
-					url: "http://localhost:8080/employeeLeave",
+					url: window.location.origin + "/employeeLeave",
 					type: "GET",
 					data: { "id": $(this).attr("data-id") },
 					dataType: "json",
@@ -321,7 +321,7 @@
 
 			$("#update_confirm").on("click", function () {
 				$.ajax({
-					url: "http://localhost:8080/employeeLeave",
+					url: window.location.origin + "/employeeLeave",
 					type: "PUT",
 					data: {
 						"id": temp_id,
@@ -369,7 +369,7 @@
 
 				//取得假別
 				$.ajax({
-					url: "http://localhost:8080/leaveDays",
+					url: window.location.origin + "/leaveDays",
 					type: "GET",
 					dataType: "json",
 					data: { "startTime": start, "endTime": end },
@@ -392,7 +392,7 @@
 				}).then((result) => {
 					if (result.isConfirmed) {
 						$.ajax({
-							url: "http://localhost:8080/employeeLeaves",
+							url: window.location.origin + "/employeeLeaves",
 							type: "DELETE",
 							data: {
 								"id": $(this).attr("data-id"),
@@ -430,7 +430,7 @@
 		//取得所有資料
 		function getLeaveData() {
 			$.ajax({
-				url: "http://localhost:8080/employeeLeaves",
+				url: window.location.origin + "/employeeLeaves",
 				type: "GET",
 				async: false,
 				dataType: "json",

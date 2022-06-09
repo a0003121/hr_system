@@ -84,7 +84,7 @@
 		function init() {
 			//取得部門
 			$.ajax({
-				url: "http://localhost:8080/depts",
+				url: window.location.origin + "/depts",
 				type: "GET",
 				dataType: "json",
 				success: function (data) {
@@ -102,7 +102,7 @@
 			});
 			//取得職位
 			$.ajax({
-				url: "http://localhost:8080/positions",
+				url: window.location.origin + "/positions",
 				type: "GET",
 				dataType: "json",
 				success: function (data) {
@@ -138,7 +138,7 @@
 				}).then((result) => {
 					if (result.isConfirmed) {
 						$.ajax({
-							url: "http://localhost:8080/position",
+							url: window.location.origin + "/position",
 							type: "DELETE",
 							data: {
 								"id": $(this).attr("data-id"),
@@ -194,7 +194,7 @@
 					})
 				} else {
 					$.ajax({
-						url: "http://localhost:8080/position",
+						url: window.location.origin + "/position",
 						type: "PUT",
 						data: {
 							"id": temp_id,
@@ -236,7 +236,7 @@
 				})
 			} else {
 				$.ajax({
-					url: "http://localhost:8080/position",
+					url: window.location.origin + "/position",
 					type: "POST",
 					data: {
 						"dept": id,

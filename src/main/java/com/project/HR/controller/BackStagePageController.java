@@ -56,6 +56,16 @@ public class BackStagePageController {
         return "/admin/salary";
     }
 
+    @GetMapping("/generalLeave.do")
+    public String gotogeneralLeavePage() {
+        return "/admin/generalLeave";
+    }
+
+    @GetMapping("/specialLeave.do")
+    public String gotoSpecialLeavePage() {
+        return "/admin/specialLeave";
+    }
+
     @GetMapping("/clock.do")
     public String gotoClockPage() {
         return "/admin/clock";

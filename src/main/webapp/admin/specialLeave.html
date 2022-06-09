@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>員工資料</title>
+	<title>特休管理</title>
 	<link rel="stylesheet" href="vendors/tablesort-5.3.0/tablesort.css">
 	<style>
 		#update_cancel,
@@ -24,7 +24,7 @@
 <body>
 	<div id="header"></div>
 
-	<h2 style="padding: 10px;">所有員工</h2>
+	<h2 style="padding: 10px;">特休管理</h2>
 	<main>
 		<div class="row">
 			<div class="col">
@@ -218,7 +218,7 @@
 			//篩選
 			$("#filter_dept, #filter_status, #search_idName").on("change", function () {
 				$("tr.search_name").show();
-
+				
 				//部門篩選
 				let dept_match = $("#filter_dept").val();
 				if (dept_match != 0) {

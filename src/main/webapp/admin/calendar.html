@@ -70,7 +70,7 @@
 		$(function () {
 
 			$.ajax({
-				url: "http://localhost:8080/calendars",
+				url: window.location.origin + "/calendars",
 				type: "GET",
 				data: {
 					year: "2022"
@@ -126,7 +126,7 @@
 			});
 			$("#confirm").on("click", function () {
 				$.ajax({
-					url: "http://localhost:8080/calendar",
+					url: window.location.origin + "/calendar",
 					type: "PUT",
 					data: {
 						"id": tempEvent.id,

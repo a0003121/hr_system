@@ -96,7 +96,7 @@
 
 			//取得保險資訊
 			$.ajax({
-				url: "http://localhost:8080/insurances",
+				url: window.location.origin + "/insurances",
 				type: "GET",
 				dataType: "json",
 				success: function (data) {
@@ -177,7 +177,7 @@
 
 			$("#update_confirm").on("click", function () {
 				$.ajax({
-					url: "http://localhost:8080/insurance",
+					url: window.location.origin + "/insurance",
 					type: "PUT",
 					data: {
 						"id": employee["id"],
@@ -228,7 +228,7 @@
 		function getEmployeeData() {
 			//取得員工資料
 			$.ajax({
-				url: "http://localhost:8080/employees",
+				url: window.location.origin + "/employees",
 				type: "GET",
 				async: false,
 				dataType: "json",

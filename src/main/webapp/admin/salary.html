@@ -137,7 +137,7 @@
 
 			//取得員工資料
 			$.ajax({
-				url: "http://localhost:8080/employees",
+				url: window.location.origin + "/employees",
 				type: "GET",
 				async: false,
 				dataType: "json",
@@ -174,7 +174,7 @@
 				return;
 			}
 			$.ajax({
-				url: "http://localhost:8080/salary_member",
+				url: window.location.origin + "/salary_member",
 				type: "GET",
 				data: {
 					startDate: tempStart,
@@ -249,7 +249,7 @@
 			}
 
 			$.ajax({
-				url: "http://localhost:8080/perform_cal",
+				url: window.location.origin + "/perform_cal",
 				type: "GET",
 				data: {
 					startDate: tempStart,
@@ -276,7 +276,7 @@
 			let that = $(this);
 			$("#view_pop").show();
 			$.ajax({
-				url: "http://localhost:8080/salaryStatistics",
+				url: window.location.origin + "/salaryStatistics",
 				type: "GET",
 				data: {
 					infoId: that.attr("data-id"),
@@ -313,7 +313,7 @@
 			}).then((result) => {
 				if (result.isConfirmed) {
 					$.ajax({
-						url: "http://localhost:8080/salaryInfo",
+						url: window.location.origin + "/salaryInfo",
 						type: "DELETE",
 						data: {
 							"id": $(this).attr("data-id"),
@@ -350,7 +350,7 @@
 		//取得計算名單
 		function loadInfoList() {
 			$.ajax({
-				url: "http://localhost:8080/salaryInfo",
+				url: window.location.origin + "/salaryInfo",
 				type: "GET",
 				dataType: "json",
 			}).done(function (data) {

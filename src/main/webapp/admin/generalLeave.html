@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>員工資料</title>
+	<title>假別管理</title>
 	<link rel="stylesheet" href="vendors/tablesort-5.3.0/tablesort.css">
 	<style>
 		#update_cancel,
@@ -24,38 +24,17 @@
 <body>
 	<div id="header"></div>
 
-	<h2 style="padding: 10px;">所有員工</h2>
+	<h2 style="padding: 10px;">假別管理</h2>
 	<main>
 		<div class="row">
-			<div class="col">
-				<select class="form-control" id="filter_dept">
-					<option value="0">篩選部門</option>
-				</select>
-			</div>
-			<div class="col">
-				<select class="form-control" id="filter_status">
-					<option value="0">篩選狀態</option>
-					<option value="1">未入職</option>
-					<option value="2">在職</option>
-					<option value="3">離職</option>
-				</select>
-			</div>
-			<div class="col">
-				<input id="search_idName" class="form-control" type="text" placeholder="搜尋編號/姓名">
-			</div>
-			<button id="new_btn" class="col btn btn-outline-primary">新增員工</button>
-
+			<button id="new_btn" class="col btn btn-outline-primary">新增假別</button>
 		</div>
 		<table class="table table-hover " id="table">
 			<thead>
 				<tr>
-					<th>員工編號</th>
-					<th>姓名</th>
-					<th>部門</th>
-					<th>職位</th>
-					<th>到職日</th>
-					<th>離職日</th>
-					<th>狀態</th>
+					<th>假別</th>
+					<th>天數</th>
+					<th></th>
 					<td></td>
 				</tr>
 			</thead>
@@ -215,73 +194,12 @@
 			//https://tristen.ca/tablesort/demo/
 			new Tablesort(document.getElementById('table'));
 
-			//篩選
-			$("#filter_dept, #filter_status, #search_idName").on("change", function () {
-				$("tr.search_name").show();
-
-				//部門篩選
-				let dept_match = $("#filter_dept").val();
-				if (dept_match != 0) {
-					$("td.filter_dept").each(function (index) {
-						if ($(this).attr("data-dept") != dept_match) {
-							$(this).parent().hide();
-						}
-					})
-				}
-				//狀態篩選
-				let status_match = $("#filter_status").val();
-				if (status_match != 0) {
-					$("td.filter_status").each(function (index) {
-						if ($(this).attr("data-status") != status_match) {
-							$(this).parent().hide();
-						}
-					})
-				}
-				//姓名員編篩選
-				let name_match = $("#search_idName").val();
-				if (name_match.trim() != 0) {
-					$("tr.search_name").each(function (index) {
-						if (!$(this).attr("data-search").includes(name_match)) {
-							$(this).hide();
-						}
-					})
-
-				}
-			})
+			
 		});
 
 		//頁面初始加載資料
 		function init() {
 			getEmployeeData();
-
-			//取得職位
-			$.ajax({
-				url: window.location.origin + "/positions",
-				type: "GET",
-				async: false,
-				dataType: "json",
-				success: function (data) {
-					positions = data;
-				}
-			});
-
-			//取得部門
-			$.ajax({
-				url: window.location.origin + "/depts",
-				type: "GET",
-				async: false,
-				dataType: "json",
-				success: function (data) {
-					for (item in data) {
-						$("#dept").append(`<option value=${data[item]["id"]}>${data[item]["name"]}</option>`);
-						$("#update_dept").append(`<option value=${data[item]["id"]}>${data[item]["name"]}</option>`);
-
-						if (item == 0) {
-							$("#position").html(getPositionByDept(positions, data[item]["id"]));
-						}
-					}
-				}
-			});
 		}
 
 		//刪除員工相關事件
@@ -581,19 +499,25 @@
 		}
 
 		function getEmployeeData() {
-			deptList = {};
 			//取得所有資料
 			$.ajax({
-				url: window.location.origin + "/employees",
+				url: window.location.origin + "/generalLeaves",
 				type: "GET",
 				async: false,
 				dataType: "json",
 				success: function (data) {
-					console.log("All Employee Data:", data);
+					console.log("All General Leaves Data:", data);
 					$("#employee_list").html("");
 					for (item in data) {
-						deptList[data[item]["dept"]] = data[item]["deptName"]["name"];
-						$("#employee_list").append(getNewRowHtml(data[item], data[item]["deptName"]["name"], data[item]["positionName"]["name"]));
+						$("#employee_list").append(
+							`<tr class="search_name" data-search="${data["empNo"]}${data["name"]}">
+								<td>${data[item]["name"]}</td>
+								<td>${data[item]["day"]==null?"∞":data[item]["day"]}</td>
+								<td>
+									<button class="delete btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-trash-alt"></i></button>
+									<button class="update btn btn-outline-primary float-end" data-id="${data["id"]}"><i class="fas fa-edit"></i></button>
+								</td>
+							</tr>`);
 					}
 
 					pageSetting("#employee_list tr")

@@ -241,7 +241,7 @@
 		function newClockTime() {
 
 			$.ajax({
-				url: "http://localhost:8080/clockRaw",
+				url: window.location.origin + "/clockRaw",
 				type: "POST",
 				dataType: "json",
 				data: {
@@ -266,7 +266,7 @@
 			temp_clockDate = clockDate;
 			$("input[name='new_clockTime']").val(new Date().toISOString().split('T')[0] + " 09:00");
 			$.ajax({
-				url: "http://localhost:8080/clockRecord",
+				url: window.location.origin + "/clockRecord",
 				type: "GET",
 				dataType: "json",
 				data: {
@@ -318,7 +318,7 @@
 			}).then((result) => {
 				if (result.isConfirmed) {
 					$.ajax({
-						url: "http://localhost:8080/clockRaw",
+						url: window.location.origin + "/clockRaw",
 						type: "DELETE",
 						data: {
 							"id": id,
@@ -365,7 +365,7 @@
 		//取得打卡資料
 		function refreshData(now, past) {
 			$.ajax({
-				url: "http://localhost:8080/clock",
+				url: window.location.origin + "/clock",
 				type: "GET",
 				data: {
 					end: now,
@@ -516,7 +516,7 @@
 		// 打卡比對
 		function compare() {
 			$.ajax({
-				url: "http://localhost:8080/compareClock",
+				url: window.location.origin + "/compareClock",
 				type: "GET",
 				data: {
 					end: compareNow,

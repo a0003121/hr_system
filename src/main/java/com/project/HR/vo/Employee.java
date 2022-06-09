@@ -45,6 +45,7 @@ public class Employee {
 	Integer compensation;
 	Integer status;
 	String email;
+	String note;
 	
 	@ManyToOne
 	@JoinColumn(name="position", insertable = false, updatable = false)
